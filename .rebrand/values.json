@@ -1,0 +1,9 @@
+{
+  "reponame": "lumen-payload",
+  "productname": "Lumen Payload",
+  "productdomain": "",
+  "subdomain": "nexo-7be",
+  "orunWorkspace": "org_c2883f7a72214f209e1e07a348b8713a",
+  "githuborg": "sourceplane",
+  "epicSlug": "infra-baselining-lumen-payload"
+}
