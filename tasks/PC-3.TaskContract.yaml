@@ -1,0 +1,19 @@
+apiVersion: orun.io/v1
+kind: TaskContract
+metadata:
+  name: PC-3
+  title: "PC2: the CMS schema (migration 200_cms_payload_core)"
+spec:
+  goal: "Schema cms and every table Payload's configuration needs exist on stage and prod, applied by db-migrate."
+  affects:
+    - "packages/db/src/migrations/200_cms_payload_core/**"
+    - "packages/db/src/manifest.ts"
+    - "packages/db/src/types.ts"
+    - "tests/db/src/**"
+    - "tasks/PC-3.TaskContract.yaml"
+  doneWhen:
+    - "db-migrate plans 200_cms_payload_core on the PR and applies it on stage and prod after the merge"
+    - "no other migration's checksum changed"
+  gates:
+    - "the migration applies to an empty Postgres 16, re-applies cleanly, and yields exactly the schema Payload pushes for the same configuration"
+    - "pnpm --filter @saas/db-tests test passes"
