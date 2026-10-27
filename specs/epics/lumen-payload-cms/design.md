@@ -139,8 +139,8 @@ pushes whichever have a value with `wrangler secret bulk`, right after
 `CMS_PAYLOAD_SECRET`, which terraform generated in PC1: no person ever types or
 sees it. `CMS_SETUP_TOKEN` is the owner's and usually absent (§4).
 
-**Plan.** The CMS needs **Workers Paid**: its bundle is about 3.8 MiB
-compressed, over Workers Free's 3 MiB, and Payload's first request in an
+**Plan.** The CMS needs **Workers Paid**: its bundle is 3.3 MiB compressed
+(CI's dry-run deploy), over Workers Free's 3 MiB, and Payload's first request in an
 isolate needs more than Free's 10 ms of CPU (PC-H).
 
 ## 4. Opening the admin: closed by default

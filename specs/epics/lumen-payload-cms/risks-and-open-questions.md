@@ -81,7 +81,7 @@ subdomain, so the same substitution applies.
 
 Three Workers Free limits stop this baseline: 5 cron triggers per account (the
 fleet's own bootstrap hit this before the CMS existed), 3 MiB per Worker
-compressed (the CMS is about 3.8 MiB), and 10 ms of CPU per request (Payload's
+compressed (the CMS is 3.3 MiB in CI's dry-run deploy), and 10 ms of CPU per request (Payload's
 first request in an isolate builds its config and schema well beyond that).
 Workers Paid lifts all three (30 s CPU, 10 MiB). The owner upgrades the
 Cloudflare account once; nothing in the repository can.
