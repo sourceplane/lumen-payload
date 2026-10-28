@@ -36,6 +36,25 @@ curl -s -o /dev/null -w '%{http_code}\n' $B/admin      # 200
 curl -s -o /dev/null -w '%{http_code}\n' -X POST $B/api/users/first-register \
   -H content-type:application/json -d '{"email":"x@example.com","password":"x"}'   # 403
 curl -fsS "$B/api/pages?limit=5"                      # published pages only
+curl -fsS "$B/api/media?limit=5"                      # media, anonymously readable
+```
+
+## Media
+
+Staff upload images (JPEG, PNG, GIF, WebP, AVIF) and PDFs in *Media* in
+`/admin`, or embed them from a page's or post's rich text. Each upload needs
+alt text and is at most 10 MiB; SVG is refused. Files are stored in the
+environment's R2 bucket (`stg-lumen-payload-cms-media-stage`,
+`prod-lumen-payload-cms-media-prod`; `infra/terraform/cloudflare-r2-cms`) and served at
+`/api/media/file/<filename>` to anyone. A second file with the same name gets
+a suffix (`photo-1.jpg`). Only admins delete media; deleting removes the
+object from the bucket too.
+
+```bash
+# as staff (a session token from /api/users/login):
+curl -H "Authorization: JWT <token>" -F "file=@photo.jpg;type=image/jpeg" \
+  -F '_payload={"alt":"What the photo shows"}' "$B/api/media"
+curl -fsS -o /dev/null -w '%{http_code}\n' "$B/api/media/file/photo.jpg"   # 200
 ```
 
 ## Change a collection
@@ -63,8 +82,8 @@ curl -fsS "$B/api/pages?limit=5"                      # published pages only
 ```bash
 # Postgres 16 on 127.0.0.1:54329 with a database `cms`, then:
 export DATABASE_URL=postgres://postgres:<pw>@127.0.0.1:54329/cms
-psql "$DATABASE_URL" -f ../../packages/db/src/migrations/200_cms_payload_core/up.sql
-pnpm dev                                        # Node, http://localhost:3002
+for m in 200_cms_payload_core 205_cms_media; do psql "$DATABASE_URL" -f ../../packages/db/src/migrations/$m/up.sql; done
+pnpm dev                                        # Node, http://localhost:3002; uploads go to a local folder
 
 # The real runtime (workerd), after `pnpm build`:
 node ../../tooling/wire/render.mjs --template wrangler.template.jsonc --out wrangler.jsonc --map wiring.fixture.json
@@ -73,7 +92,9 @@ CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE_CMS="$DATABASE_URL" \
   pnpm exec wrangler dev --config wrangler.jsonc --env stage --port 8799
 ```
 
-`wrangler dev` needs a password in the local connection string.
+`wrangler dev` needs a password in the local connection string. It serves
+`R2_MEDIA` from a local bucket under `.wrangler/state`, so uploads exercise the
+real R2 adapter.
 
 ## Common failures
 
@@ -88,6 +109,11 @@ CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE_CMS="$DATABASE_URL" \
   - `{"db":"error"}`: Payload started but the query failed: check that
     `cloudflare-hyperdrive-cms` applied, that the deploy rendered the right
     `HYPERDRIVE_CMS` id, and that db-migrate applied migration 200.
+- **Uploads fail with "R2_MEDIA binding is missing".** The deploy rendered no
+  `R2_MEDIA` binding: check that `cloudflare-r2-cms` applied for that
+  environment and published `WIRING_CLOUDFLARE_R2_CMS`, then redeploy the CMS.
+- **An upload answers 413.** It is over 10 MiB (`MEDIA_MAX_BYTES` in
+  `src/collections/Media.ts`).
 - **Deploy: "exceeds the size limit" or CPU errors (1102).** The account is on
   Workers Free. The CMS needs Workers Paid.
 - **Requests hang for 10 s, then 500.** A regression to a shared pool: the

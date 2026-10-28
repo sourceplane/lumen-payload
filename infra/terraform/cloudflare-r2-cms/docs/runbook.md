@@ -11,7 +11,7 @@ requests only plan.
 ```bash
 # published outputs (names only, per environment)
 orun secrets list --org <ws> --env stage   # WIRING_CLOUDFLARE_R2_CMS
-wrangler r2 bucket list                    # lumen-payload-cms-media-stage, -prod
+wrangler r2 bucket list                    # stg-lumen-payload-cms-media-stage, prod-lumen-payload-cms-media-prod
 ```
 
 ## The token
@@ -27,6 +27,10 @@ orun integrations cloudflare secret create CLOUDFLARE_R2_TOKEN \
 ```
 
 ## Common failures
+
+- **"Please enable R2 through the Cloudflare Dashboard. (10042)"**: R2 has
+  never been enabled on the Cloudflare account. The account owner enables it
+  once in the dashboard (R2 Object Storage), then re-run the failed lanes.
 
 - **Provider auth failure (403 on the bucket)**: the token is missing,
   expired or revoked. Re-create it as above; nothing else changes.
