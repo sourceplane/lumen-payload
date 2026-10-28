@@ -1,0 +1,13 @@
+apiVersion: orun.io/v1
+kind: TaskContract
+metadata:
+  name: PC-1
+  title: "PC0: the lumen-payload-cms doc set"
+spec:
+  goal: "The lumen-payload-cms epic's design of record is on main: README, design, implementation plan, risks, and status."
+  affects:
+    - "specs/epics/lumen-payload-cms/**"
+    - "tasks/**"
+  doneWhen:
+    - "specs/epics/lumen-payload-cms/ holds README.md, design.md, implementation-plan.md, risks-and-open-questions.md and IMPLEMENTATION-STATUS.md on main"
+  gates: []
