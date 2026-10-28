@@ -23,8 +23,8 @@ const NOTICES: Record<string, string> = {
   plan_unchanged: 'You are already on that plan.',
   cancel_scheduled: 'Your plan is cancelled. It stays active until the end of the period you paid for.',
   canceled: 'Your plan is cancelled.',
-  reconciled: 'Brought your plan up to date with the payment provider.',
-  nothing_to_reconcile: 'Your plan already matches the payment provider.',
+  reconciled: 'Thanks: your new plan is in place.',
+  nothing_to_reconcile: 'Thanks: the payment provider is applying your new plan. It can take a few seconds to show here.',
 }
 
 export type Status = { kind: 'saved' | 'error' | 'notice'; text: string }
@@ -34,7 +34,7 @@ export function statusMessage(query: {
   error?: string | undefined
   notice?: string | undefined
 }): Status | null {
-  const notice = query.notice ? NOTICES[query.notice] : undefined
+  const notice = query.notice && Object.hasOwn(NOTICES, query.notice) ? NOTICES[query.notice] : undefined
   if (notice) return { kind: 'notice', text: notice }
   if (query.error) {
     const code = query.error.replace(/[^a-z0-9_.-]/gi, '').slice(0, 64)

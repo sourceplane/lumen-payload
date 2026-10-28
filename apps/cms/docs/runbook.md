@@ -45,8 +45,8 @@ back to the page with *Saved.* or what went wrong.
 
 Paying never happens in the CMS: *Upgrade* sends the browser to the payment
 provider's checkout, which returns to Billing & plan (`?checkout=complete`);
-the page then reconciles the plan once, so it does not wait for the
-provider's webhook. *Manage payment and invoices* opens the provider's
+the page then posts one reconcile, so it does not wait for the provider's
+webhook. *Manage payment and invoices* opens the provider's
 customer portal; it appears only for a paid subscription the provider manages.
 
 A page that cannot reach Lumen says so (for example *The CMS could not reach

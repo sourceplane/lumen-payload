@@ -77,6 +77,8 @@ describe('billing form', () => {
     const res = await billingForm(post({ action: 'portal', orgId: 'org_1' }), s.deps)
     expect(res.headers.get('location')).toBe('/admin/organization/billing?org=org_1&error=provider_unavailable')
     expect(statusMessage({ error: 'provider_unavailable' })?.text).toMatch(/no payment provider/)
+    expect(statusMessage({ notice: 'constructor' })).toBeNull()
+    expect(statusMessage({ notice: 'reconciled' })?.kind).toBe('notice')
   })
 
   it('refuses unknown actions, a missing organization and odd plan codes without calling Lumen', async () => {

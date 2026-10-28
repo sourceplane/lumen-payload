@@ -51,9 +51,10 @@ the code departed from `design.md`.
 - **PX2, signed-out redirects.** A custom view's redirect to the sign-in is
   sent inside the streamed page (Next's `NEXT_REDIRECT`), which the browser
   follows; the response itself is `200`, as for Payload's own guarded views.
-- **PX3, the checkout return.** The page reconciles once when it is opened
-  with `?checkout=complete`, as the console's billing actions did, instead of
-  polling the summary. Embedded checkout (the provider's overlay) is not
+- **PX3, the checkout return.** Opened with `?checkout=complete`, the page
+  submits one same-origin reconcile post (`FinishCheckout`), as the console's
+  billing actions reconciled once, instead of polling the summary; opening a
+  link changes nothing by itself. Embedded checkout (the provider's overlay) is not
   used: the CMS sends the browser to the hosted checkout, which returns to the
   page.
 - **PX3, stage has no payment provider.** Stage's billing worker answers

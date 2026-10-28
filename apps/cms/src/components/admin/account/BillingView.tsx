@@ -2,12 +2,13 @@ import type { PublicPlan } from '@saas/contracts/billing'
 import type { AdminViewServerProps } from 'payload'
 
 import { listOrganizations, pickOrganization } from '@/lib/lumen/account-api'
-import { getSummary, listInvoices, listPlans, reconcile } from '@/lib/lumen/billing-api'
+import { getSummary, listInvoices, listPlans } from '@/lib/lumen/billing-api'
 import { formatPlanPrice, hasManageableSubscription, orderedPlans, planChangeAction, planFeatureLines } from '@/lib/lumen/models/plan-actions'
 import { lumenTransport } from '@/lib/lumen/transport'
 
 import { AccountHeading, AccountTemplate, card, LoadError, param, requireStaff, row, StatusLine } from './AccountPage'
 import { ConfirmSubmit } from './ConfirmSubmit'
+import { FinishCheckout } from './FinishCheckout'
 
 // Billing & plan (lumen-payload-console design §4): the organization's plan,
 // what it includes, its invoices, and the ways to change it. Paying happens on
@@ -76,10 +77,9 @@ export async function BillingView(props: AdminViewServerProps) {
   const orgs = await listOrganizations(transport, token)
   const org = orgs.ok === true ? pickOrganization(orgs.value, param(props, 'org')) : null
 
-  // Back from the provider's checkout: bring the plan up to date once, so the
-  // page does not wait on the provider's webhook to show what was bought.
+  // Back from the provider's checkout: FinishCheckout reconciles once by form
+  // post, so the page does not wait on the provider's webhook.
   const returning = param(props, 'checkout') === 'complete'
-  const reconciled = org && returning ? await reconcile(transport, token, org.id) : null
 
   const [summary, plans, invoices] = org
     ? await Promise.all([getSummary(transport, token, org.id), listPlans(transport, token, org.id), listInvoices(transport, token, org.id)])
@@ -96,13 +96,7 @@ export async function BillingView(props: AdminViewServerProps) {
       <div data-testid="lumen-billing">
         <AccountHeading title="Billing & plan" description="Your organization's plan, what it includes, and its invoices." />
         <StatusLine props={props} />
-        {returning ? (
-          <p data-testid="checkout-return">
-            {reconciled?.ok === true && reconciled.value.reconciled
-              ? 'Thanks: your new plan is in place.'
-              : 'Thanks: the payment provider is applying your new plan. It can take a few seconds to show here.'}
-          </p>
-        ) : null}
+        {returning && org ? <FinishCheckout orgId={org.id} /> : null}
         {orgs.ok === false ? (
           <LoadError code={orgs.code} />
         ) : !org ? (
