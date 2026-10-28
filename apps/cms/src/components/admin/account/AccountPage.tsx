@@ -30,11 +30,11 @@ export function param(props: AdminViewServerProps, name: string): string | undef
 
 /** The line a form's redirect asked for: saved, or what went wrong. */
 export function StatusLine({ props }: { props: AdminViewServerProps }) {
-  const status = statusMessage({ saved: param(props, 'saved'), error: param(props, 'error') })
+  const status = statusMessage({ saved: param(props, 'saved'), error: param(props, 'error'), notice: param(props, 'notice') })
   if (!status) return null
   return (
     <div data-testid="status-line" data-status={status.kind}>
-      <Banner type={status.kind === 'saved' ? 'success' : 'error'}>{status.text}</Banner>
+      <Banner type={status.kind === 'error' ? 'error' : status.kind === 'notice' ? 'info' : 'success'}>{status.text}</Banner>
     </div>
   )
 }

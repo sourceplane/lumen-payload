@@ -62,6 +62,7 @@ export default buildConfig({
           path: '/organization/notifications',
           exact: true,
         },
+        lumenBilling: { Component: '/components/admin/account/BillingView#BillingView', path: '/organization/billing', exact: true },
       },
     },
   },
