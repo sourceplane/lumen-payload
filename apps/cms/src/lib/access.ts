@@ -6,6 +6,9 @@ type StaffUser = { collection?: string; role?: Role | null } | null | undefined
 const roleOf = (user: StaffUser): Role | undefined =>
   user && (user.collection === undefined || user.collection === 'users') ? (user.role ?? undefined) : undefined
 
+/** The Payload role of a request's user, or undefined (signed out, pending, or not a `users` row). */
+export const staffRoleOf = (user: unknown): Role | undefined => roleOf(user as StaffUser)
+
 export const anyone: Access = () => true
 // Boolean-only (not Access): Payload's `access.admin` must answer yes or no.
 export const isStaff = ({ req: { user } }: { req: PayloadRequest }): boolean => Boolean(roleOf(user as StaffUser))
