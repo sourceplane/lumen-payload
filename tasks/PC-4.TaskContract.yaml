@@ -16,5 +16,4 @@ spec:
   gates:
     - "the built Worker passes the local end-to-end run in workerd against a database built only from migration 200: setup gate, publish, drafts, anonymous reads, GraphQL, and 80 concurrent requests"
     - "pnpm --filter @saas/cms-tests build passes"
-  needs:
-    - "the Cloudflare account on Workers Paid (risk PC-H)"
+  # Prerequisite (not a contract field): the Cloudflare account on Workers Paid (risk PC-H).
