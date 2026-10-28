@@ -164,6 +164,11 @@ it through `api-edge`, and no worker calls it.
   served at `/api/media/file/<filename>`. SVG is refused. The bucket component
   runs with `CLOUDFLARE_R2_TOKEN` (project rung, from the Cloudflare
   connection's `r2-data` template, rotated by the platform every 30 days).
+- **Sign-in and account:** the admin signs in with a Lumen account (no CMS
+  passwords; a new account is pending until an admin gives it a role, and
+  admins invite people by creating a user with their email). Its *Account*
+  nav group holds the Lumen account pages: Profile, Security activity,
+  Organization and Notifications.
 - **Secrets:** `CMS_PAYLOAD_SECRET` is generated and published by
   `cloudflare-hyperdrive-cms` (nobody chooses or sees it) and pushed to the
   Worker as `PAYLOAD_SECRET`. `CMS_SETUP_TOKEN` exists only if the owner sets

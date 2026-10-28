@@ -46,10 +46,22 @@ export default buildConfig({
     // Lumen sign-in replaces Payload's password views (lumen-payload-console
     // design §1, §3): Payload's local strategy is off on `users`.
     components: {
+      // The Lumen account pages (design §4): Payload's account view becomes
+      // the Lumen profile, and the rest are custom views under an Account
+      // group in the nav.
+      afterNavLinks: ['/components/admin/account/AccountNav#AccountNav'],
       views: {
         login: { Component: '/components/admin/LumenLogin#LumenLogin' },
         unauthorized: { Component: '/components/admin/PendingAccess#PendingAccess' },
         logout: { Component: '/components/admin/LumenSignOut#LumenSignOut' },
+        account: { Component: '/components/admin/account/ProfileView#ProfileView' },
+        lumenSecurity: { Component: '/components/admin/account/SecurityView#SecurityView', path: '/account/security', exact: true },
+        lumenOrganization: { Component: '/components/admin/account/OrganizationView#OrganizationView', path: '/organization', exact: true },
+        lumenNotifications: {
+          Component: '/components/admin/account/NotificationsView#NotificationsView',
+          path: '/organization/notifications',
+          exact: true,
+        },
       },
     },
   },
