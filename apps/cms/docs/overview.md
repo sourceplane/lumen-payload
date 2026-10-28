@@ -28,7 +28,7 @@ through the API. Drafts, accounts and everything else need a staff session.
 Staff upload media; only admins delete it.
 
 The admin also has the person's **Lumen account pages** (Profile, Security
-activity, Organization, Notifications), read from and saved to Lumen through
+activity, Organization, Notifications, Billing & plan), read from and saved to Lumen through
 `api-edge`; nothing of them is stored in the CMS but the display name.
 
 ## Depends on

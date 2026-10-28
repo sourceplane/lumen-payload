@@ -1,0 +1,18 @@
+apiVersion: orun.io/v1
+kind: TaskContract
+metadata:
+  name: PX-4
+  title: "PX3: billing and plan in the Payload admin"
+spec:
+  goal: "Admins and editors see their organization's plan, entitlements and invoices in the Payload admin and change the plan there: upgrade through the provider's checkout (returning to the CMS), switch or cancel a paid plan, and open the provider's customer portal."
+  affects:
+    - "apps/cms/**"
+    - "tests/cms/**"
+    - "ai/context/operations.md"
+    - "specs/epics/lumen-payload-console/IMPLEMENTATION-STATUS.md"
+    - "tasks/PX-4.TaskContract.yaml"
+  doneWhen:
+    - "on stage, Billing & plan shows the current plan, the plans, entitlements and invoices"
+    - "on stage, Upgrade reaches the provider's checkout, or explains that no provider is configured there"
+    - "the billing form sends the browser only to an https provider page and accepts only same-origin posts from staff"
+  gates: []

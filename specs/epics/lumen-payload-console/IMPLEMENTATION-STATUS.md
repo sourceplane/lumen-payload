@@ -8,7 +8,7 @@ the code departed from `design.md`.
 | PX0 — the spec | Merged | sourceplane/lumen-payload#21 |
 | PX1 — Lumen sign-in | Merged; stage partly deployed, the rest waits on the credential-mint quota | sourceplane/lumen-payload#22 |
 | PX2 — your account and organization | In review | — |
-| PX3 — billing and plan | Not started | — |
+| PX3 — billing and plan | In review | — |
 | PX4 — the front door | Not started | — |
 | PX5 — the record | Not started | — |
 
@@ -51,3 +51,12 @@ the code departed from `design.md`.
 - **PX2, signed-out redirects.** A custom view's redirect to the sign-in is
   sent inside the streamed page (Next's `NEXT_REDIRECT`), which the browser
   follows; the response itself is `200`, as for Payload's own guarded views.
+- **PX3, the checkout return.** The page reconciles once when it is opened
+  with `?checkout=complete`, as the console's billing actions did, instead of
+  polling the summary. Embedded checkout (the provider's overlay) is not
+  used: the CMS sends the browser to the hosted checkout, which returns to the
+  page.
+- **PX3, stage has no payment provider.** Stage's billing worker answers
+  `provider_unavailable` for the portal and `plan_not_purchasable` for
+  checkout, so on stage *Upgrade* comes back with that explanation; the
+  provider's pages could not be reached there.

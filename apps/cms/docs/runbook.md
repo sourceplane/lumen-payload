@@ -41,6 +41,13 @@ back to the page with *Saved.* or what went wrong.
 | Security activity | `/admin/account/security` | sign-ins, codes and sessions, newest first, 50 a page | — |
 | Organization | `/admin/organization` | the Lumen organization (Solo: the personal one) | — (renaming is not in the API) |
 | Notifications | `/admin/organization/notifications` | email categories for that organization | which categories Lumen emails |
+| Billing & plan | `/admin/organization/billing` | the plan, its status and renewal, what it includes, invoices | upgrade (the provider's checkout), switch or cancel a paid plan, the provider's portal |
+
+Paying never happens in the CMS: *Upgrade* sends the browser to the payment
+provider's checkout, which returns to Billing & plan (`?checkout=complete`);
+the page then reconciles the plan once, so it does not wait for the
+provider's webhook. *Manage payment and invoices* opens the provider's
+customer portal; it appears only for a paid subscription the provider manages.
 
 A page that cannot reach Lumen says so (for example *The CMS could not reach
 Lumen*) instead of failing: check `api-edge` and the `LUMEN_API` binding.
@@ -166,6 +173,10 @@ real R2 adapter.
   environment and published `WIRING_CLOUDFLARE_R2_CMS`, then redeploy the CMS.
 - **An upload answers 413.** It is over 10 MiB (`MEDIA_MAX_BYTES` in
   `src/collections/Media.ts`).
+- **Billing & plan says "no payment provider is configured".** The billing
+  worker of that environment has no provider credentials (stage, today), so
+  checkout and the portal cannot start; plans, entitlements and invoices
+  still show.
 - **An account page says "Lumen answered with an error (internal_error)".**
   api-edge or the worker behind it failed; its logs carry the request id.
   Security activity answered 503 for everyone until identity-worker queried

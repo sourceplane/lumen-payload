@@ -15,6 +15,8 @@ import { ConfirmSubmit } from './ConfirmSubmit'
 
 const SALES_EMAIL = 'sales@sourceplane.ai'
 
+const section = { marginTop: 'calc(var(--base) * 2)' }
+
 const cell = { padding: 'calc(var(--base) / 2)', borderBottom: '1px solid var(--theme-elevation-100)', textAlign: 'left' as const }
 
 function formatDate(iso: string | null | undefined): string {
@@ -140,7 +142,7 @@ export async function BillingView(props: AdminViewServerProps) {
               ) : null}
             </section>
 
-            <h2>Plans</h2>
+            <h2 style={section}>Plans</h2>
             {plans?.ok === false ? (
               <LoadError code={plans.code} />
             ) : (
@@ -160,7 +162,7 @@ export async function BillingView(props: AdminViewServerProps) {
               </div>
             )}
 
-            <h2>What your plan includes</h2>
+            <h2 style={section}>What your plan includes</h2>
             {entitlements.length === 0 ? (
               <p>Nothing recorded yet.</p>
             ) : (
@@ -186,7 +188,7 @@ export async function BillingView(props: AdminViewServerProps) {
               </table>
             )}
 
-            <h2>Invoices</h2>
+            <h2 style={section}>Invoices</h2>
             {invoices?.ok === false ? (
               <LoadError code={invoices.code} />
             ) : (invoices?.ok === true ? invoices.value : []).length === 0 ? (
