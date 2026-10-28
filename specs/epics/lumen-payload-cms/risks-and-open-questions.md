@@ -103,3 +103,17 @@ composition renders it correctly) runs the suite too, so every pull request that
 touches the CMS runs it. Turning the other suites on is a separate change,
 because it may surface failures that have gone unseen; the newer stack-tectonic
 fixes the guards.
+
+## PC-J — The first landing of a wiring source races across environments (FOUND, avoided here)
+
+The CMS's `wrangler.template.jsonc` names both environments' Hyperdrive ids, so
+`wire-live` needs the wiring of stage **and** prod in every CMS deploy. But
+`dependsOn` orders only within one environment: `cms.stage` waits for
+`cloudflare-hyperdrive-cms.stage`, not for prod. When the wiring source and the
+CMS land in the same push, the stage CMS lane can resolve its secrets before
+the prod apply publishes, find the prod wiring empty (it is optional), and
+stop in `wire-live`; prod then fails behind it. multi-tenant-saas-2 hit exactly
+this when it landed the whole layer in one pull request, and one re-run of the
+failed lanes converged it. This repository landed the Hyperdrive component
+first (PC1, its own merge), so the CMS never deployed before both wirings
+existed. Any later product built from this layer should keep that order.

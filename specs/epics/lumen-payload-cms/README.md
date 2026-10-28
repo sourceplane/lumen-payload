@@ -23,14 +23,14 @@ read.
 
 | Field | Value |
 |-------|-------|
-| Status | Draft |
+| Status | Shipped (PC0–PC3, PC5); PC4 gated on an `r2-data` secret |
 | Cluster | **PC** (PC0–PC5) |
 | Owner(s) | `apps/cms` (the CMS) · `infra/terraform/cloudflare-hyperdrive-cms` (its database path) · `packages/db` (its schema, as a migration) |
 | Builds on | `lumen baseline-v32` — reuses Supabase, the `db-migrate` lane and the wiring model; touches no worker |
 | Changes | Adds three components and one migration. Every existing component is unchanged. |
 | Decisions locked | (1) Payload is a deployable **beside** the fleet, not a bounded context inside it. (2) It reads through its **own cache-disabled Hyperdrive config**. (3) Its schema is **SQL in the `db-migrate` lane**, in schema `cms`. (4) Payload is pinned to **3.89.0**. (5) The admin is **closed by default**; the owner opens it. |
 | Gate | PC1 and PC2 are invisible (a database path and a schema). PC3 is the first visible change: `/admin` and `/health` answer on stage and prod. |
-| Shipped as | |
+| Shipped as | sourceplane/lumen-payload#6 (spec), #7 (database path), #8 (schema), #9 (the CMS), #14 (the record) |
 
 ## Read order
 

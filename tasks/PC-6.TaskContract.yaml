@@ -1,0 +1,19 @@
+apiVersion: orun.io/v1
+kind: TaskContract
+metadata:
+  name: PC-6
+  title: "PC5: the record (operations guide, AGENTS.md, status)"
+spec:
+  goal: "An owner can open the CMS admin from ai/context/operations.md alone, and IMPLEMENTATION-STATUS.md records what shipped and every departure from the design."
+  affects:
+    - "ai/context/operations.md"
+    - "AGENTS.md"
+    - "specs/epics/lumen-payload-cms/**"
+    - "tasks/PC-6.TaskContract.yaml"
+  doneWhen:
+    - "operations.md has a CMS section: what it is, opening the admin, the verify commands, the caveats"
+    - "AGENTS.md lists apps/cms in its read order and layout"
+    - "IMPLEMENTATION-STATUS.md reads shipped for PC0-PC3 and PC5, gated for PC4, with the live verification and every departure"
+  gates:
+    - "the CMS is live on stage and prod: /health ok with db ok, /admin 200, anonymous first-register 403"
+    - "orun plan --changed plans no component lane for this diff"
