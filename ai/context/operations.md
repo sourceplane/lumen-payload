@@ -20,11 +20,14 @@ component-native desired-state repo:
 - **`apps/*-worker`** — bounded-context Workers (identity, membership,
   projects, policy, config, events, webhooks, metering, billing,
   notifications, …). Never public; reached only through the edge.
-- **`apps/web-console-next`** — the console UI, Next.js on Workers +
-  Static Assets, configured against the edge.
-- **`apps/cms`** — Payload CMS on Workers (OpenNext), its own public
-  Worker beside the fleet: `/admin` for staff, `/api/*` for content. See
+- **`apps/cms`** — the product and its console: Payload CMS on Workers
+  (OpenNext), its own public Worker. `/admin` for staff, signed in with a
+  Lumen account, holding the account, organization, notifications,
+  security-activity and billing pages; `/api/*` for content. See
   [The CMS](#the-cms-appscms).
+- **`apps/web-console-next`** — the old console URL, now a redirect
+  Worker: every path answers 308 to its place in the same environment's
+  CMS (`/auth/callback` to `/auth/lumen/callback`).
 - **`infra/terraform/*`** — data plane: Supabase projects (stage/prod),
   Cloudflare Hyperdrive, idempotency KV, and the CMS's own cache-disabled
   Hyperdrive (`cloudflare-hyperdrive-cms`). **`infra/db-migrate`** —
@@ -78,11 +81,19 @@ Caveats that matter:
 
 ## Secrets model
 
-- **Brokered provider secrets** (project rung): `CLOUDFLARE_API_TOKEN`,
-  `CLOUDFLARE_HYPERDRIVE_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`,
-  `SUPABASE_ACCESS_TOKEN`, `SUPABASE_ORG_ID` — pointers minted per-run
-  from the workspace's integration connections. No long-lived values at
-  rest; nothing to rotate by hand.
+- **Rotated Cloudflare tokens** (project rung): `CLOUDFLARE_API_TOKEN`
+  (`workers-deploy`) and `CLOUDFLARE_HYPERDRIVE_TOKEN` (`hyperdrive-edit`),
+  plus `CLOUDFLARE_R2_TOKEN` (`r2-data`, the CMS media bucket). Each is
+  minted once from the workspace's Cloudflare connection and re-minted by
+  the platform every 30 days, so a CI run no longer mints a fresh token per
+  job (`orun secrets list --env stage --chain` shows them SERVES FROM
+  project). The first two shadow the workspace's brokered bindings of the
+  same name.
+- **Brokered provider secrets** (workspace rung): `CLOUDFLARE_ACCOUNT_ID`
+  and `SUPABASE_ORG_ID` (connection facts, which mint nothing and do not
+  count toward the daily credential-mint limit) and `SUPABASE_ACCESS_TOKEN`
+  (minted per run; Supabase supports only brokered mode). Nothing to rotate
+  by hand.
 - **Job-output secrets** (environment rungs): `WIRING_*`,
   `SUPABASE_PROJECT_REF`, `SUPABASE_DB_URL`, `SUPABASE_DB_PASSWORD`,
   `CMS_PAYLOAD_SECRET` — published by the infrastructure terraform; deploy
@@ -148,7 +159,9 @@ that re-verifies.
 
 Payload CMS 3.89 on Workers (OpenNext), deployed as `lumen-payload-cms-<env>`
 on stage and prod, beside the fleet rather than inside it: nothing routes to
-it through `api-edge`, and no worker calls it.
+it through `api-edge`, and no worker calls it. It is the product: `intent.yaml`'s
+product URLs point at it, `/` redirects to `/admin`, and the old console URL
+(`lumen-payload-web-console-next-<env>`) answers 308 into it.
 
 - **Database path:** its own Hyperdrive config, `stg-lumen-payload-cms-stage`
   and `prod-lumen-payload-cms-prod` (`infra/terraform/cloudflare-hyperdrive-cms`), over the same Supabase origin
@@ -194,6 +207,10 @@ The visit sets a 15-minute cookie and opens the Lumen sign-in. While no admin
 exists, whoever signs in with that cookie becomes the admin; afterwards admins
 make everyone else an `editor` or `admin`, and the token can be deleted.
 
+**Where each environment stands (2026-10-28):** stage's first admin is open
+(the setup token was used once and revoked, and the owner's own account is
+invited as admin); prod waits for the owner to open it.
+
 ### Verify it
 
 ```bash
@@ -203,6 +220,8 @@ curl -s -o /dev/null -w '%{http_code}\n' $B/admin      # 200, the Lumen sign-in
 curl -s -o /dev/null -w '%{http_code}\n' -X POST $B/api/users/login \
   -H content-type:application/json -d '{"email":"x@example.com","password":"x"}'   # 403: no CMS passwords
 curl -fsS "$B/api/media?limit=1"                       # the media collection answers
+C=https://lumen-payload-web-console-next-stage.<subdomain>.workers.dev
+curl -s -o /dev/null -w '%{http_code} %{redirect_url}\n' $C/login   # 308 into $B
 ```
 
 The CMS lane's smoke check asserts the first two after every deploy.

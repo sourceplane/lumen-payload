@@ -23,14 +23,14 @@ the CMS, its schema and its media stay exactly as that epic built them.
 
 | Field | Value |
 |-------|-------|
-| Status | Proposed |
+| Status | Shipped (2026-10-28) |
 | Cluster | **PX** (PX0–PX5) |
 | Owner(s) | `apps/cms` (the console now) · `apps/identity-worker` (its OAuth return allowlist) · `apps/web-console-next` (retired to a redirect) · `packages/db` (one migration) |
 | Builds on | `lumen-payload-cms` (PC0–PC5) and Solo mode (`specs/profiles/solo-m0.md`) |
 | Changes | The CMS gains Lumen sign-in and the account pages; the Lumen console's URL redirects to the CMS. api-edge and every bounded-context worker are unchanged. |
 | Decisions locked | (1) The **Payload admin is the console**; the Lumen console UI is retired to a redirect. (2) **Lumen identity is the only sign-in**: Payload's local strategy is off. (3) The CMS calls `api-edge` **server to server**; the Lumen session lives only in an httpOnly cookie on the CMS host. (4) **Roles stay Payload's**: a new account is *pending* until an admin grants editor or admin, and the first admin still needs the owner's setup token. (5) Only the **Solo-mode surface** moves; what Solo mode hides at the edge stays hidden. |
 | Gate | PX1 is the first visible change: `/admin` asks for a Lumen sign-in on stage and prod. PX4 is the one users notice: the product URL opens Payload. |
-| Shipped as | — |
+| Shipped as | sourceplane/lumen-payload#21 (PX0), #22 (PX1), #23 (PX2), #24 (PX3), #25 (PX4) and the PX5 record; see `IMPLEMENTATION-STATUS.md` |
 
 ## Read order
 
