@@ -201,5 +201,14 @@ export const manifest: MigrationManifest = {
       description:
         "Payload CMS media (lumen-payload-cms PC4) — the media upload collection's table (files live in the cloudflare-r2-cms bucket) and its column on Payload's document-lock relations; generated from apps/cms/payload-migrations by scripts/payload-migration-to-sql.mjs",
     },
+    {
+      id: "206_cms_lumen_identity",
+      context: "cms",
+      path: "206_cms_lumen_identity/up.sql",
+      checksum:
+        "81bc9ddcf261928a81ded38c77698cef729506581962d0fa731681fab4f9d279",
+      description:
+        "CMS staff sign in with Lumen (lumen-payload-console PX1) — users gain lumen_user_id (unique, the link to identity.users) and role becomes optional with no default (no role means pending); generated from apps/cms/payload-migrations",
+    },
   ],
 };

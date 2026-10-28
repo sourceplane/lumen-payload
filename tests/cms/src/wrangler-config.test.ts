@@ -38,6 +38,7 @@ type Env = {
   vars?: Record<string, string>
   hyperdrive?: Array<{ binding: string; id: string }>
   r2_buckets?: Array<{ binding: string; bucket_name: string }>
+  services?: Array<{ binding: string; service: string }>
 }
 let rendered: Env & {
   name: string
@@ -91,7 +92,14 @@ describe('wrangler config', () => {
     ['prod', '00000000000000000000000000000013'],
   ])('%s binds HYPERDRIVE_CMS to its own config', (env, id) => {
     expect(rendered.env[env]!.hyperdrive).toEqual([{ binding: 'HYPERDRIVE_CMS', id }])
-    expect(rendered.env[env]!.vars).toEqual({ ENVIRONMENT: env })
+    expect(rendered.env[env]!.vars).toEqual({
+      ENVIRONMENT: env,
+      LUMEN_API_PUBLIC_URL: `https://lumen-payload-api-edge-${env}.nexo-7be.workers.dev`,
+    })
+  })
+
+  it.each(['stage', 'prod'])('%s reaches api-edge over the LUMEN_API service binding (Lumen sign-in)', (env) => {
+    expect(rendered.env[env]!.services).toEqual([{ binding: 'LUMEN_API', service: `lumen-payload-api-edge-${env}` }])
   })
 
   it.each([
@@ -101,9 +109,10 @@ describe('wrangler config', () => {
     expect(rendered.env[env]!.r2_buckets).toEqual([{ binding: 'R2_MEDIA', bucket_name: bucket }])
   })
 
-  it('dev binds no database and no bucket: it never deploys', () => {
+  it('dev binds no database, no bucket and no api-edge: it never deploys', () => {
     expect(rendered.env.dev!.hyperdrive).toBeUndefined()
     expect(rendered.env.dev!.r2_buckets).toBeUndefined()
+    expect(rendered.env.dev!.services).toBeUndefined()
   })
 
   it('carries no secrets: PAYLOAD_SECRET and CMS_SETUP_TOKEN are Worker secrets', () => {

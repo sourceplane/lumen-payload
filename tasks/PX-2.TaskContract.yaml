@@ -1,0 +1,28 @@
+apiVersion: orun.io/v1
+kind: TaskContract
+metadata:
+  name: PX-2
+  title: "PX1: Lumen sign-in for the Payload admin"
+spec:
+  goal: "The Payload admin signs people in with their Lumen account and nothing else: the lumen auth strategy over api-edge, an httpOnly session cookie, pending accounts until an admin grants a role, the first admin through the owner's setup token, and sign-out that revokes the Lumen session."
+  affects:
+    - "apps/cms/**"
+    - "tests/cms/**"
+    - "packages/db/src/manifest.ts"
+    - "packages/db/src/migrations/206_cms_lumen_identity/**"
+    - "tests/db/src/cms-migration.test.ts"
+    - "apps/api-edge/src/app-config.ts"
+    - "apps/api-edge/src/cors.ts"
+    - "tests/api-edge/src/cors.test.ts"
+    - "apps/identity-worker/wrangler.template.jsonc"
+    - "tests/identity-worker/src/oauth-allowlist.test.ts"
+    - "ai/context/operations.md"
+    - "specs/epics/lumen-payload-console/IMPLEMENTATION-STATUS.md"
+    - "tasks/PX-2.TaskContract.yaml"
+  doneWhen:
+    - "on stage, an email-code sign-in reaches the pending page"
+    - "on stage, with setup open, a sign-in reaches the admin as admin"
+    - "on stage, a second account is pending until an admin promotes it"
+    - "after sign-out the old token answers 401 at GET /v1/auth/session"
+    - "prod's /admin shows the Lumen sign-in page"
+  gates: []

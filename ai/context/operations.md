@@ -121,7 +121,7 @@ orun integrations list --org <ws> --json && orun cloud check --org <ws>
 | check integrations | `orun integrations list --org <ws> --json` |
 | custom domain | see [Setting the domain later](#setting-the-domain-later): replace the domain string, create the zone, restore `infra/terraform/cloudflare-domain`'s commented-out `subscribe` block (it ships parked, `subscribe.environments: []`, mid-way to provider v5), merge, then run the `08-docs` phase |
 | headless/CI credentials | `ORUN_TOKEN` (workspace-scoped) + `GITHUB_TOKEN` |
-| open the CMS admin | [Open the admin](#open-the-admin-once-per-environment): the owner sets `CMS_SETUP_TOKEN`, then visits `/setup?token=…` once |
+| open the CMS admin | [Open the admin](#open-the-admin-once-per-environment): the owner sets `CMS_SETUP_TOKEN`, visits `/setup?token=…` once and signs in with Lumen |
 
 The ops phases (docs refresh and the original deployment sequence) all
 live in ONE versioned artifact: `repo-blueprint.yaml` in the baseline this
@@ -171,8 +171,10 @@ it through `api-edge`, and no worker calls it.
 
 ### Open the admin (once per environment)
 
-The admin ships **closed**: the first account can only be created through a
-setup token the owner chooses. The full steps are in
+The admin signs people in with their **Lumen account** (emailed code, GitHub
+or Google); it has no passwords of its own. A new account waits, *pending*,
+until an admin gives it a role in *Users*. The **first admin** needs a setup
+token the owner chooses. The full steps are in
 [`apps/cms/docs/runbook.md`](../../apps/cms/docs/runbook.md); in short:
 
 ```bash
@@ -182,18 +184,18 @@ orun secrets set CMS_SETUP_TOKEN --org <ws> --env stage   # a token of 16+ chara
 # then visit https://lumen-payload-cms-stage.<subdomain>.workers.dev/setup?token=<token>
 ```
 
-The visit sets a 15-minute cookie and opens `/admin/create-first-user`. That
-account is an admin; admins create every other account. Once it exists,
-Payload refuses first-user creation on its own, and the token can be deleted.
+The visit sets a 15-minute cookie and opens the Lumen sign-in. While no admin
+exists, whoever signs in with that cookie becomes the admin; afterwards admins
+make everyone else an `editor` or `admin`, and the token can be deleted.
 
 ### Verify it
 
 ```bash
 B=https://lumen-payload-cms-stage.<subdomain>.workers.dev
 curl -fsS $B/health                                   # {"status":"ok","db":"ok"}
-curl -s -o /dev/null -w '%{http_code}\n' $B/admin      # 200
-curl -s -o /dev/null -w '%{http_code}\n' -X POST $B/api/users/first-register \
-  -H content-type:application/json -d '{"email":"x@example.com","password":"x"}'   # 403 until setup is opened
+curl -s -o /dev/null -w '%{http_code}\n' $B/admin      # 200, the Lumen sign-in
+curl -s -o /dev/null -w '%{http_code}\n' -X POST $B/api/users/login \
+  -H content-type:application/json -d '{"email":"x@example.com","password":"x"}'   # 403: no CMS passwords
 curl -fsS "$B/api/media?limit=1"                       # the media collection answers
 ```
 
@@ -231,7 +233,7 @@ anyone's real domain). Nothing that uses the domain was removed; it waits:
 | `intent.yaml` | `BASE_DOMAIN` (every environment) and `CONSOLE_CUSTOM_DOMAIN` (`stage.lumen-payload.example.com`, `prod.lumen-payload.example.com`) — the parameters of the parked `infra/terraform/cloudflare-domain` |
 | `infra/terraform/cloudflare-domain` | `baseDomain` in its `component.yaml`, the Terraform variable's default, its README |
 | `apps/api-edge/wrangler.template.jsonc` | `CONSOLE_CUSTOM_DOMAIN`, the console origin CORS allows besides the workers.dev one |
-| `apps/identity-worker/wrangler.template.jsonc` | `OAUTH_ALLOWED_CONSOLE_ORIGINS`, which lists the workers.dev console too, so sign-in works without a domain |
+| `apps/identity-worker/wrangler.template.jsonc` | `OAUTH_ALLOWED_CONSOLE_ORIGINS`, which lists the workers.dev console and CMS too, so sign-in works without a domain |
 | `apps/notifications-worker/wrangler.template.jsonc` | `EMAIL_FROM_ADDRESS`, `no-reply@mail.lumen-payload.example.com` |
 | `apps/billing-worker/wrangler.template.jsonc` | `POLAR_SUCCESS_URL`, the fallback return after checkout |
 | `tests/api-edge` | the CORS fixtures, which follow the edge's config |

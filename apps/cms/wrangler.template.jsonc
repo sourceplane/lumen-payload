@@ -15,25 +15,40 @@
   "vars": { "ENVIRONMENT": "local" },
   "env": {
     "dev": {
-      "vars": { "ENVIRONMENT": "dev" }
+      "vars": {
+        "ENVIRONMENT": "dev",
+        "LUMEN_API_PUBLIC_URL": "https://lumen-payload-api-edge-dev.nexo-7be.workers.dev"
+      }
     },
     "stage": {
-      "vars": { "ENVIRONMENT": "stage" },
+      "vars": {
+        "ENVIRONMENT": "stage",
+        "LUMEN_API_PUBLIC_URL": "https://lumen-payload-api-edge-stage.nexo-7be.workers.dev"
+      },
       "hyperdrive": [
         { "binding": "HYPERDRIVE_CMS", "id": "@@wiring(cloudflare-hyperdrive-cms/stage:hyperdrive_id)@@" }
       ],
       "r2_buckets": [
         { "binding": "R2_MEDIA", "bucket_name": "@@wiring(cloudflare-r2-cms/stage:bucket_name)@@" }
-      ]
+      ],
+      // Lumen sign-in (lumen-payload-console design §2): sessions are checked
+      // with api-edge over this binding, never over the public internet.
+      "services": [{ "binding": "LUMEN_API", "service": "lumen-payload-api-edge-stage" }]
     },
     "prod": {
-      "vars": { "ENVIRONMENT": "prod" },
+      "vars": {
+        "ENVIRONMENT": "prod",
+        "LUMEN_API_PUBLIC_URL": "https://lumen-payload-api-edge-prod.nexo-7be.workers.dev"
+      },
       "hyperdrive": [
         { "binding": "HYPERDRIVE_CMS", "id": "@@wiring(cloudflare-hyperdrive-cms/prod:hyperdrive_id)@@" }
       ],
       "r2_buckets": [
         { "binding": "R2_MEDIA", "bucket_name": "@@wiring(cloudflare-r2-cms/prod:bucket_name)@@" }
-      ]
+      ],
+      // Lumen sign-in (lumen-payload-console design §2): sessions are checked
+      // with api-edge over this binding, never over the public internet.
+      "services": [{ "binding": "LUMEN_API", "service": "lumen-payload-api-edge-prod" }]
     }
   }
 }

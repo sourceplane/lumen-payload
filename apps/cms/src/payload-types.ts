@@ -130,7 +130,14 @@ export interface UserAuthOperations {
 export interface User {
   id: string;
   name?: string | null;
-  role: 'admin' | 'editor';
+  /**
+   * Empty means pending: signed in with Lumen, but not let into the admin yet.
+   */
+  role?: ('admin' | 'editor') | null;
+  /**
+   * Set on first Lumen sign-in.
+   */
+  lumenUserId?: string | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -341,6 +348,7 @@ export interface PayloadMigration {
 export interface UsersSelect<T extends boolean = true> {
   name?: T;
   role?: T;
+  lumenUserId?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;

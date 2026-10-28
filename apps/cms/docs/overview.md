@@ -10,8 +10,11 @@ at `/api/<collection>` and GraphQL at `/api/graphql`, over Postgres schema
 
 ## What it holds
 
-- **users**: staff accounts (`admin`, `editor`). The first account is created
-  through the setup gate and is an admin; admins create the rest.
+- **users**: staff accounts, one per Lumen account that signed in
+  (`lumenUserId`). Sign-in is Lumen's (emailed code, GitHub, Google); there are
+  no CMS passwords. A new account has no role until an admin makes it an
+  `editor` or `admin`; the first admin signs in through the owner's setup
+  token.
 - **pages** and **posts**: drafts, versions (25 per document), a Lexical
   rich-text body and a unique slug. Posts have an excerpt and a category.
 - **categories**: name and slug.
@@ -29,10 +32,14 @@ Staff upload media; only admins delete it.
 - **cloudflare-hyperdrive-cms**: its database path (cache disabled) and its
   generated Payload secret.
 - **cloudflare-r2-cms**: its media bucket.
-- **db-migrate**: applies schema `cms` (migrations `200_cms_payload_core` and
-  `205_cms_media`) before the CMS deploys.
+- **db-migrate**: applies schema `cms` (migrations `200_cms_payload_core`,
+  `205_cms_media` and `206_cms_lumen_identity`) before the CMS deploys.
+- **api-edge**: the CMS asks it, over a service binding, whose Lumen session a
+  request carries, and ends the session on sign-out. Its CORS lets the CMS's
+  sign-in page call the auth routes, and identity-worker's OAuth return
+  allowlist includes the CMS.
 
-Nothing in the fleet calls the CMS, and the CMS calls nothing in the fleet.
+Nothing in the fleet calls the CMS.
 
 ## Verified by
 
