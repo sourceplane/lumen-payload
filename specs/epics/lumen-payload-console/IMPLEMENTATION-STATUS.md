@@ -129,3 +129,8 @@ stack. It is a property of that sandbox, not of the deployment.
 - **PX4, branding.** The admin's title suffix is *Lumen Payload*, and the
   logo and icon are a glyph with the product name, drawn in the admin's text
   colour. `.rebrand/values.json` carries a name, not a logo file.
+- **PX5, the dependency lists (follow-up).** The overview pages of api-edge,
+  the parked domain, contracts and the SDK still named the Next.js console
+  among their dependents or dependencies. They now name the CMS, which is
+  what each serves or is used by, and drop the console where the redirect
+  Worker uses nothing.
