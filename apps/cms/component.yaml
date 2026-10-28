@@ -103,10 +103,16 @@ spec:
     wiringComponents: "cloudflare-hyperdrive-cms,cloudflare-r2-cms"
     wiringEnvs: "stage,prod"
     wiringFixture: wiring.fixture.json
+    # Terraform owns every resource the bindings name (cloudflare-r2-cms,
+    # cloudflare-hyperdrive-cms). Left on, wrangler reads the R2 bucket over
+    # the R2 API before the upload, and the brokered workers-deploy token has
+    # no R2 permission: "Authentication error [code: 10000]" on
+    # /r2/buckets/<name>. The deploy step passes --x-provision=false.
+    skipResourceProvisioning: true
     installCommand: pnpm install --frozen-lockfile
     # The CMS's suite (tests/cms) runs in this lane too: a change to apps/cms
     # alone does not mark cms-tests changed (dependsOn orders, it does not
-    # propagate changes), and 0.20.0's worker composition has no test step.
+    # propagate changes), and the stack's worker composition has no test step.
     buildCommand: pnpm exec turbo run build --filter=@saas/cms && pnpm --filter @saas/cms-tests test
     typecheckCommand: pnpm exec turbo run typecheck --filter=@saas/cms
     dryRunCommand: pnpm exec wrangler deploy --dry-run --config wrangler.jsonc --env prod
