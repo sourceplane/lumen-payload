@@ -10,6 +10,7 @@ const LINKS = [
   { href: '/admin/account/security', label: 'Security activity' },
   { href: '/admin/organization', label: 'Organization' },
   { href: '/admin/organization/notifications', label: 'Notifications' },
+  { href: '/admin/organization/billing', label: 'Billing & plan' },
 ]
 
 export function AccountNav() {
@@ -25,11 +26,11 @@ export function AccountNav() {
           </>
         )
         return active ? (
-          <div key={href} className="nav__link" id={`nav-lumen-${label.toLowerCase().replace(/\s+/g, '-')}`}>
+          <div key={href} className="nav__link" id={`nav-lumen-${label.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}>
             {inner}
           </div>
         ) : (
-          <Link key={href} className="nav__link" href={href} prefetch={false} id={`nav-lumen-${label.toLowerCase().replace(/\s+/g, '-')}`}>
+          <Link key={href} className="nav__link" href={href} prefetch={false} id={`nav-lumen-${label.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}>
             {inner}
           </Link>
         )

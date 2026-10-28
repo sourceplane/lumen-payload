@@ -30,6 +30,7 @@ import { ProfileView as ProfileView_277e3ece63d7b343699a9b408a007eb3 } from '../
 import { SecurityView as SecurityView_b295470aeebb099452f0f0106181edbc } from '../../../components/admin/account/SecurityView'
 import { OrganizationView as OrganizationView_c762e34a568e64979d425a844ff81df5 } from '../../../components/admin/account/OrganizationView'
 import { NotificationsView as NotificationsView_aa0b52d1d262a686350346369dcc5c62 } from '../../../components/admin/account/NotificationsView'
+import { BillingView as BillingView_32ce8c78e2f0654615d7a227314913c0 } from '../../../components/admin/account/BillingView'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
 /** @type import('payload').ImportMap */
@@ -66,5 +67,6 @@ export const importMap = {
   "/components/admin/account/SecurityView#SecurityView": SecurityView_b295470aeebb099452f0f0106181edbc,
   "/components/admin/account/OrganizationView#OrganizationView": OrganizationView_c762e34a568e64979d425a844ff81df5,
   "/components/admin/account/NotificationsView#NotificationsView": NotificationsView_aa0b52d1d262a686350346369dcc5c62,
+  "/components/admin/account/BillingView#BillingView": BillingView_32ce8c78e2f0654615d7a227314913c0,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
 }

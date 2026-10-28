@@ -2,6 +2,7 @@ import type { NotificationCategoryPreferences } from '@saas/contracts/notificati
 
 import { staffRoleOf } from '../access'
 import { updatePreferences, updateProfile } from './account-api'
+import { cancelSubscription, changePlan, createCheckout, createPortal, reconcile, safeProviderUrl } from './billing-api'
 import type { LumenTransport } from './client'
 import { isSameOrigin, LUMEN_SESSION_COOKIE, readCookie } from './cookies'
 import { DISPLAY_NAME_MAX, toDisplayNameValue, validateDisplayName } from './models/profile'
@@ -17,6 +18,7 @@ export const ACCOUNT_PAGES = {
   security: '/admin/account/security',
   organization: '/admin/organization',
   notifications: '/admin/organization/notifications',
+  billing: '/admin/organization/billing',
 } as const
 
 export type FormUser = { id: string | number; role?: string | null; lumenUserId?: string | null; collection?: string }
@@ -33,9 +35,14 @@ const seeOther = (location: string) =>
   new Response(null, { status: 303, headers: { location, 'cache-control': 'no-store' } })
 
 /** Where a form goes back to, with what happened. */
-export function backTo(page: string, outcome: { saved: true } | { error: string }, extra: Record<string, string> = {}): string {
+export function backTo(
+  page: string,
+  outcome: { saved: true } | { error: string } | { notice: string },
+  extra: Record<string, string> = {},
+): string {
   const params = new URLSearchParams(extra)
   if ('saved' in outcome) params.set('saved', '1')
+  else if ('notice' in outcome) params.set('notice', outcome.notice)
   else params.set('error', outcome.error)
   return `${page}?${params.toString()}`
 }
@@ -99,6 +106,60 @@ export function notificationsForm(request: Request, deps: FormDeps): Promise<Res
       categories: categoriesFromForm(form),
     })
     return { location: backTo(page, result.ok === false ? { error: result.code } : { saved: true }, back) }
+  })
+}
+
+/** Where the provider sends the buyer back to after checkout. */
+export const CHECKOUT_RETURN = `${ACCOUNT_PAGES.billing}?checkout=complete`
+
+const BILLING_ACTIONS = ['checkout', 'portal', 'change', 'cancel', 'reconcile'] as const
+type BillingAction = (typeof BILLING_ACTIONS)[number]
+
+/**
+ * POST /lumen/billing: one organization's plan. Checkout and the portal answer
+ * with the provider's page, which the browser is sent to (https only); a plan
+ * change, a cancellation and a reconcile come back to Billing & plan.
+ */
+export function billingForm(request: Request, deps: FormDeps): Promise<Response> {
+  const page = ACCOUNT_PAGES.billing
+  return handle(request, deps, page, async ({ form, token, transport }) => {
+    const action = String(form.get('action') ?? '') as BillingAction
+    const orgId = String(form.get('orgId') ?? '')
+    const planCode = String(form.get('planCode') ?? '')
+    const back = orgId ? { org: orgId } : undefined
+    if (!orgId || !BILLING_ACTIONS.includes(action)) return { location: backTo(page, { error: 'bad_request' }, back) }
+    if ((action === 'checkout' || action === 'change') && !/^[a-z0-9_-]{1,64}$/.test(planCode)) {
+      return { location: backTo(page, { error: 'bad_request' }, back) }
+    }
+    const fail = (code: string) => ({ location: backTo(page, { error: code }, back) })
+
+    if (action === 'checkout') {
+      // isSameOrigin passed, so Origin is the CMS as the browser sees it.
+      const origin = request.headers.get('origin') as string
+      const result = await createCheckout(transport, token, orgId, { planCode, origin, returnPath: `${CHECKOUT_RETURN}&org=${encodeURIComponent(orgId)}` })
+      if (result.ok === false) return fail(result.code)
+      const url = safeProviderUrl(result.value.checkoutUrl)
+      return url ? { location: url } : fail('bad_provider_url')
+    }
+    if (action === 'portal') {
+      const result = await createPortal(transport, token, orgId)
+      if (result.ok === false) return fail(result.code)
+      const url = safeProviderUrl(result.value.portalUrl)
+      return url ? { location: url } : fail('bad_provider_url')
+    }
+    if (action === 'change') {
+      const result = await changePlan(transport, token, orgId, planCode)
+      if (result.ok === false) return fail(result.code)
+      return { location: backTo(page, { notice: result.value.changed ? 'plan_changed' : 'plan_unchanged' }, back) }
+    }
+    if (action === 'cancel') {
+      const result = await cancelSubscription(transport, token, orgId)
+      if (result.ok === false) return fail(result.code)
+      return { location: backTo(page, { notice: result.value.cancelAtPeriodEnd ? 'cancel_scheduled' : 'canceled' }, back) }
+    }
+    const result = await reconcile(transport, token, orgId)
+    if (result.ok === false) return fail(result.code)
+    return { location: backTo(page, { notice: result.value.reconciled ? 'reconciled' : 'nothing_to_reconcile' }, back) }
   })
 }
 
