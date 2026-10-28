@@ -22,9 +22,14 @@ component-native desired-state repo:
   notifications, …). Never public; reached only through the edge.
 - **`apps/web-console-next`** — the console UI, Next.js on Workers +
   Static Assets, configured against the edge.
+- **`apps/cms`** — Payload CMS on Workers (OpenNext), its own public
+  Worker beside the fleet: `/admin` for staff, `/api/*` for content. See
+  [The CMS](#the-cms-appscms).
 - **`infra/terraform/*`** — data plane: Supabase projects (stage/prod),
-  Cloudflare Hyperdrive, idempotency KV. **`infra/db-migrate`** — database
-  migrations (plan on PRs, apply on merge).
+  Cloudflare Hyperdrive, idempotency KV, and the CMS's own cache-disabled
+  Hyperdrive (`cloudflare-hyperdrive-cms`). **`infra/db-migrate`** —
+  database migrations (plan on PRs, apply on merge), the CMS's schema
+  `cms` among them.
 - **`packages/*`** — shared contracts/SDK packages the apps build on.
 
 Environments: **`stage`** and **`prod`** are fully provisioned and
@@ -79,9 +84,10 @@ Caveats that matter:
   from the workspace's integration connections. No long-lived values at
   rest; nothing to rotate by hand.
 - **Job-output secrets** (environment rungs): `WIRING_*`,
-  `SUPABASE_PROJECT_REF`, `SUPABASE_DB_URL`, `SUPABASE_DB_PASSWORD` —
-  published by the infrastructure terraform; deploy lanes resolve them to
-  wire worker bindings (KV ids, Hyperdrive ids, database URLs).
+  `SUPABASE_PROJECT_REF`, `SUPABASE_DB_URL`, `SUPABASE_DB_PASSWORD`,
+  `CMS_PAYLOAD_SECRET` — published by the infrastructure terraform; deploy
+  lanes resolve them to wire worker bindings (KV ids, Hyperdrive ids,
+  database URLs) and the CMS's Payload secret.
 - Inspect by NAME only: `orun secrets list --org <ws> --project` and
   `--env stage|prod`. No tooling in this repo ever prints a secret value,
   and no document in `ai/context/` may contain one.
@@ -115,6 +121,7 @@ orun integrations list --org <ws> --json && orun cloud check --org <ws>
 | check integrations | `orun integrations list --org <ws> --json` |
 | custom domain | see [Setting the domain later](#setting-the-domain-later): replace the domain string, create the zone, restore `infra/terraform/cloudflare-domain`'s commented-out `subscribe` block (it ships parked, `subscribe.environments: []`, mid-way to provider v5), merge, then run the `08-docs` phase |
 | headless/CI credentials | `ORUN_TOKEN` (workspace-scoped) + `GITHUB_TOKEN` |
+| open the CMS admin | [Open the admin](#open-the-admin-once-per-environment): the owner sets `CMS_SETUP_TOKEN`, then visits `/setup?token=…` once |
 
 The ops phases (docs refresh and the original deployment sequence) all
 live in ONE versioned artifact: `repo-blueprint.yaml` in the baseline this
@@ -136,6 +143,67 @@ before anything runs (and `productdomain` once the product has a domain);
 land and verify rather than just place files; `--status` previews without
 writing. Every phase is idempotent — re-running a completed one is a no-op
 that re-verifies.
+
+## The CMS (`apps/cms`)
+
+Payload CMS 3.89 on Workers (OpenNext), deployed as `lumen-payload-cms-<env>`
+on stage and prod, beside the fleet rather than inside it: nothing routes to
+it through `api-edge`, and no worker calls it.
+
+- **Database path:** its own Hyperdrive config, `lumen-payload-cms-<env>`
+  (`infra/terraform/cloudflare-hyperdrive-cms`), over the same Supabase origin
+  as the fleet's, with query caching disabled so an editor reads back what they
+  saved. Each query or transaction opens its own client; Hyperdrive pools.
+- **Schema:** `cms`, created by migration `200_cms_payload_core` in the
+  `db-migrate` lane, like every other schema. Payload never pushes or migrates
+  the database itself.
+- **Secrets:** `CMS_PAYLOAD_SECRET` is generated and published by
+  `cloudflare-hyperdrive-cms` (nobody chooses or sees it) and pushed to the
+  Worker as `PAYLOAD_SECRET`. `CMS_SETUP_TOKEN` exists only if the owner sets
+  it (below).
+
+### Open the admin (once per environment)
+
+The admin ships **closed**: the first account can only be created through a
+setup token the owner chooses. The full steps are in
+[`apps/cms/docs/runbook.md`](../../apps/cms/docs/runbook.md); in short:
+
+```bash
+orun secrets set CMS_SETUP_TOKEN --org <ws> --env stage   # a token of 16+ characters; it prompts
+# merge any change to apps/cms (or re-run its lane) so the deploy pushes it, or:
+#   pnpm --filter @saas/cms exec wrangler secret put CMS_SETUP_TOKEN --name lumen-payload-cms-stage
+# then visit https://lumen-payload-cms-stage.<subdomain>.workers.dev/setup?token=<token>
+```
+
+The visit sets a 15-minute cookie and opens `/admin/create-first-user`. That
+account is an admin; admins create every other account. Once it exists,
+Payload refuses first-user creation on its own, and the token can be deleted.
+
+### Verify it
+
+```bash
+B=https://lumen-payload-cms-stage.<subdomain>.workers.dev
+curl -fsS $B/health                                   # {"status":"ok","db":"ok"}
+curl -s -o /dev/null -w '%{http_code}\n' $B/admin      # 200
+curl -s -o /dev/null -w '%{http_code}\n' -X POST $B/api/users/first-register \
+  -H content-type:application/json -d '{"email":"x@example.com","password":"x"}'   # 403 until setup is opened
+```
+
+The CMS lane's smoke check asserts the first two after every deploy.
+
+### Caveats
+
+- **Workers Paid.** The bundle is about 3.3 MiB compressed, over Free's
+  3 MiB, and Payload needs more CPU than Free's 10 ms.
+- **First landing of a wiring source.** The CMS's wrangler config names
+  both environments' Hyperdrive ids, so each deploy needs the wiring of
+  stage *and* prod, but `dependsOn` only orders within one environment.
+  Land `cloudflare-hyperdrive-cms` before the CMS (as this repository did),
+  or re-run the CMS lanes once both environments' apply has published.
+- **Media uploads** wait on R2 (milestone PC4 of `lumen-payload-cms`): the
+  brokered `workers-deploy` token cannot create buckets, so an owner mints
+  `CLOUDFLARE_R2_TOKEN` from the Cloudflare connection's `r2-data` template
+  first.
 
 ## Setting the domain later
 
