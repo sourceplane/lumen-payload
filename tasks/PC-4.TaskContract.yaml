@@ -1,0 +1,20 @@
+apiVersion: orun.io/v1
+kind: TaskContract
+metadata:
+  name: PC-4
+  title: "PC3: the CMS on Workers (apps/cms, tests/cms)"
+spec:
+  goal: "Payload CMS answers on stage and prod: /health reports the database ok, /admin renders, and first-user setup is closed until the owner opens it."
+  affects:
+    - "apps/cms/**"
+    - "tests/cms/**"
+    - "pnpm-lock.yaml"
+    - "tasks/PC-4.TaskContract.yaml"
+  doneWhen:
+    - "every lane of the PR is green, including the CMS build, its suite, typecheck and wrangler deploy --dry-run"
+    - "after the merge, on stage and prod: /health answers {\"status\":\"ok\",\"db\":\"ok\"}, /admin answers 200, and an anonymous POST /api/users/first-register answers 403"
+  gates:
+    - "the built Worker passes the local end-to-end run in workerd against a database built only from migration 200: setup gate, publish, drafts, anonymous reads, GraphQL, and 80 concurrent requests"
+    - "pnpm --filter @saas/cms-tests build passes"
+  needs:
+    - "the Cloudflare account on Workers Paid (risk PC-H)"
