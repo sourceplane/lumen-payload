@@ -68,9 +68,10 @@ spec:
     buildCommand: pnpm run build && pnpm --filter @saas/web-console-next-tests test
 
     # Smoke: an old console page answers 308 to its place in the CMS of the
-    # same environment, query kept, and following the redirect lands on the
-    # admin's Lumen sign-in.
-    smokeCommand: "out=$(curl -s -o /dev/null -w '%{http_code} %{redirect_url}' \"${DEPLOYED_URL}/orgs/x/settings/billing?checkout=complete\") && [ \"${out}\" = \"308 https://lumen-payload-cms-${ORUN_ENVIRONMENT}.${WORKERS_DEV_SUBDOMAIN}.workers.dev/admin/organization/billing?checkout=complete\" ] && html=$(curl -sfL \"${DEPLOYED_URL}/\") && echo \"${html}\" | grep -q 'Lumen Payload'"
+    # same environment, query kept, and the old /login, followed, is the
+    # admin's Lumen sign-in view (the page payload names LumenSignIn; the form
+    # itself renders in the browser).
+    smokeCommand: "out=$(curl -s -o /dev/null -w '%{http_code} %{redirect_url}' \"${DEPLOYED_URL}/orgs/x/settings/billing?checkout=complete\") && [ \"${out}\" = \"308 https://lumen-payload-cms-${ORUN_ENVIRONMENT}.${WORKERS_DEV_SUBDOMAIN}.workers.dev/admin/organization/billing?checkout=complete\" ] && html=$(curl -sfL \"${DEPLOYED_URL}/login\") && echo \"${html}\" | grep -q 'LumenSignIn'"
   labels:
     team: platform
     layer: delivery
