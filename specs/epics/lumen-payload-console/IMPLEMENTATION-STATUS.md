@@ -45,15 +45,17 @@ the sign-in code, so a test account can sign in):
   password login and `/setup` without the owner's token answer 403. Prod's
   first admin waits for the owner.
 
-**A note on the browser runs.** In the sandbox that ran these checks,
-Chromium's requests for the admin's route chunk
-(`/_next/static/chunks/app/(payload)/admin/%5B%5B...segments%5D%5D/page-*.js`)
-came back as a 307 to the same URL, looping, while byte-identical requests
-from curl, Python and Node got 200 from the same edge (and the
-multi-tenant-saas-2 CMS, without these changes, behaved the same). The runs
-therefore fetched `/_next/static/**` through Playwright's own network stack.
-If a person's browser ever shows `ERR_TOO_MANY_REDIRECTS` on `/admin`, this is
-where to look.
+**A note on the browser runs.** The sandbox that ran these checks sends
+Chromium through an egress proxy that percent-encodes `(` and `)` in request
+paths: the admin's route chunk
+`/_next/static/chunks/app/(payload)/admin/%5B%5B...segments%5D%5D/page-*.js`
+reached Cloudflare as `%28payload%29`, and Workers Static Assets answered that
+form with a 307 to the literal path, so Chromium looped
+(`ERR_TOO_MANY_REDIRECTS`). curl, Python and Node through the same proxy, and
+any browser on an ordinary network, send the literal path and get 200 (the
+same was found and recorded in sourceplane/multi-tenant-saas-2's LMS record).
+The runs therefore fetched `/_next/static/**` through Playwright's own network
+stack. It is a property of that sandbox, not of the deployment.
 
 ## Departures from the design
 
