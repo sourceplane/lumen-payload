@@ -104,8 +104,8 @@ variable "zoneMode" {
 
 variable "workerNamePrefix" {
   type        = string
-  default     = "lumen-payload-web-console-next"
-  description = "Worker name prefix for the new console; full Worker service name is {prefix}-{environment}"
+  default     = "lumen-payload-cms"
+  description = "Worker name prefix of the console (the Payload CMS); full Worker service name is {prefix}-{environment}"
 }
 
 variable "CONSOLE_CUSTOM_DOMAIN" {
