@@ -15,8 +15,11 @@ browser ──► lumen-payload-cms-<env> (Worker)
               /api/media/file/* uploaded files      └──────► R2_MEDIA ─► <prefix>lumen-payload-cms-media-<env>
               /setup            opens first-admin setup (owner only)
               /auth/lumen/*     the Lumen session in, out, and the OAuth return
+              /admin/account…   the Lumen account pages (custom admin views)
+              /lumen/*          their forms
                                      │
-                    lumen strategy ──┴──► LUMEN_API (service binding) ─► api-edge ─► identity
+        lumen strategy, account pages ──► LUMEN_API (service binding) ─► api-edge ─► identity,
+                                                                             membership, notifications
 ```
 
 ## Bindings and secrets
@@ -74,6 +77,17 @@ browser ──► lumen-payload-cms-<env> (Worker)
   `unauthorized` view tells them. The first admin needs the owner's setup token
   (`src/lib/setup-gate.ts`, `src/app/setup/route.ts`): while no admin exists,
   the account that signs in with it becomes admin. Admins grant the rest.
+- **The account pages are admin views over api-edge** (`src/components/admin/account/`,
+  `src/lib/lumen/account-api.ts`, `src/lib/lumen/forms.ts`; design §4).
+  Payload's `account` view is replaced, so Payload still keeps pending
+  accounts out of it; the other three are custom views, which Payload does not
+  guard, so each checks for a staff role itself and brings Payload's default
+  template. They read per request, uncached, with the person's own token, and
+  render on the server: the browser never calls api-edge for them. Forms post
+  to `/lumen/*` route handlers that accept only a same-origin post from staff
+  and answer `303` back to the page. The console's framework-free models
+  (`src/lib/lumen/models/`) are copied, not shared: the console is retired in
+  PX4.
 - **Pinned versions.** Payload 3.89.0 hashes passwords with 25,000 PBKDF2
   iterations; 3.90.0 hard-codes 600,000, which workerd rejects. Next 16.3.3,
   React 19.2.6, OpenNext 1.20.1 and wrangler 4.116 are the combination Payload's
@@ -85,7 +99,6 @@ browser ──► lumen-payload-cms-<env> (Worker)
 
 ## Out of scope here
 
-Lumen's account pages in the admin (PX2, PX3), the console URL opening the
-admin (PX4), serving content through `api-edge`, per-tenant content, and image derivatives: resizing, cropping and focal
+Billing and plan in the admin (PX3), the console URL opening the admin (PX4), serving content through `api-edge`, per-tenant content, and image derivatives: resizing, cropping and focal
 points need `sharp`, which does not run on Workers, so files are stored and
 served as uploaded.

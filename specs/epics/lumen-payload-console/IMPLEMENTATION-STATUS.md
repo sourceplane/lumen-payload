@@ -6,8 +6,8 @@ the code departed from `design.md`.
 | Milestone | State | PR |
 |---|---|---|
 | PX0 — the spec | Merged | sourceplane/lumen-payload#21 |
-| PX1 — Lumen sign-in | In review | — |
-| PX2 — your account and organization | Not started | — |
+| PX1 — Lumen sign-in | Merged; stage partly deployed, the rest waits on the credential-mint quota | sourceplane/lumen-payload#22 |
+| PX2 — your account and organization | In review | — |
 | PX3 — billing and plan | Not started | — |
 | PX4 — the front door | Not started | — |
 | PX5 — the record | Not started | — |
@@ -28,3 +28,15 @@ the code departed from `design.md`.
 - **PX1, migration 206.** Payload adds `lumen_user_id` at the end of `users`,
   while its push of a fresh schema puts it after `role`. The two schemas are
   identical apart from that column order, which nothing reads.
+- **PX2, the API client.** Design §4 calls api-edge "through `@saas/sdk`".
+  The CMS uses its own small client (`src/lib/lumen/client.ts`, from PX1),
+  which takes the service binding as its transport, and types from
+  `@saas/contracts` (a type-only dependency): the SDK would be a second HTTP
+  layer for the same handful of routes.
+- **PX2, identity-worker fix.** `GET /v1/auth/security-events` answered 503
+  for everyone: it queried the UUID `user_id` column with the public `usr_`
+  id. It now converts the id first, as every other handler does. The
+  baseline's identity-worker has the same bug.
+- **PX2, signed-out redirects.** A custom view's redirect to the sign-in is
+  sent inside the streamed page (Next's `NEXT_REDIRECT`), which the browser
+  follows; the response itself is `200`, as for Payload's own guarded views.
