@@ -31,6 +31,7 @@ read.
 | Decisions locked | (1) Payload is a deployable **beside** the fleet, not a bounded context inside it. (2) It reads through its **own cache-disabled Hyperdrive config**. (3) Its schema is **SQL in the `db-migrate` lane**, in schema `cms`. (4) Payload is pinned to **3.89.0**. (5) The admin is **closed by default**; the owner opens it. |
 | Gate | PC1 and PC2 are invisible (a database path and a schema). PC3 is the first visible change: `/admin` and `/health` answer on stage and prod. |
 | Shipped as | sourceplane/lumen-payload#6 (spec), #7 (database path), #8 (schema), #9 (the CMS), #14 (the record), #15 and #16 (media on R2) |
+| Superseded in part | Decision (1): `lumen-payload-console` (PX) makes the Payload admin the console, signed in with Lumen accounts. Everything else here stands. |
 
 ## Read order
 

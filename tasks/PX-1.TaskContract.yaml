@@ -1,0 +1,14 @@
+apiVersion: orun.io/v1
+kind: TaskContract
+metadata:
+  name: PX-1
+  title: "PX0: the spec for Payload as the console"
+spec:
+  goal: "The lumen-payload-console design set is on main: sign-in, the strategy and session, roles, the Lumen pages in the admin, the front door, security and scope."
+  affects:
+    - "specs/epics/lumen-payload-console/**"
+    - "specs/epics/lumen-payload-cms/README.md"
+    - "tasks/PX-1.TaskContract.yaml"
+  doneWhen:
+    - "the five documents are merged to main"
+  gates: []
