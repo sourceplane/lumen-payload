@@ -65,10 +65,13 @@ owner, by design of the secrets model), or an owner-held setup token.
 **Decided:** the setup token. It costs the owner one secret and one visit, and
 it means the pipeline never holds a credential it would have to show someone.
 
-## PC-F — Media needs a token this workspace does not have (RISK)
+## PC-F — Media needs a token this workspace does not have (RESOLVED)
 
-The `workers-deploy` token cannot create R2 buckets. PC4 waits on an
-`r2-data` mint. Until then the CMS has no uploads; nothing else depends on PC4.
+The `workers-deploy` token cannot create R2 buckets. The owner minted
+`CLOUDFLARE_R2_TOKEN` from the Cloudflare connection's `r2-data` template
+(project rung, rotated by the platform every 30 days), and enabled R2 on the
+account, which a first bucket apply needs ("Please enable R2 through the
+Cloudflare Dashboard. (10042)"). Both are once per account.
 
 ## PC-G — `workers.dev` and the subdomain in smoke checks (ACCEPTED)
 
@@ -101,8 +104,14 @@ For the CMS: `tests/cms`'s own `build` script runs the suite, the component
 subscribes on `verify`, and the `cms` component's `buildCommand` (the worker
 composition renders it correctly) runs the suite too, so every pull request that
 touches the CMS runs it. Turning the other suites on is a separate change,
-because it may surface failures that have gone unseen; the newer stack-tectonic
-fixes the guards.
+because it may surface failures that have gone unseen. stack-tectonic 0.20.1
+fixed the guards, and this repository pins 0.21.0 since sourceplane/lumen-payload#18,
+but the suites still subscribe on `quick-check`, so nothing changed for them.
+Run locally on 2026-10-28, 16 of the 19 suites that declare a test
+`preBuildCommand` pass. `api-edge-tests`, `membership-worker-tests` and
+`web-console-next-tests` fail: the api-edge suite reads a rendered
+`wrangler.jsonc` that is not committed, and the other two each have one suite
+that fails to load.
 
 ## PC-J — The first landing of a wiring source races across environments (FOUND, avoided here)
 
@@ -117,3 +126,19 @@ this when it landed the whole layer in one pull request, and one re-run of the
 failed lanes converged it. This repository landed the Hyperdrive component
 first (PC1, its own merge), so the CMS never deployed before both wirings
 existed. Any later product built from this layer should keep that order.
+
+## PC-K — wrangler checks every R2 bucket with the deploy token (FOUND, fixed in stack-tectonic 0.21.0)
+
+wrangler 4 provisions resources by default on `wrangler deploy`. For an R2
+binding it first reads the bucket from the R2 API, unless the deployed Worker
+already has that binding. The brokered `workers-deploy` token has no R2
+permission, so the first CMS deploy with `R2_MEDIA` failed on stage and prod
+with "Authentication error [code: 10000]" on `/r2/buckets/<name>`, after
+`wire-live` had passed (main run 40659792149). There is no environment
+variable or config field to turn it off, only `--x-provision=false`.
+stack-tectonic 0.21.0 (sourceplane/stack-tectonic#22) added
+`skipResourceProvisioning`, and the CMS sets it (sourceplane/lumen-payload#18).
+Terraform owns the bucket, so nothing is lost. Main run 40666021733 then
+deployed both environments with `R2_MEDIA` bound, so the Workers upload accepts
+an R2 binding from a token without R2 permission; only the provisioning check
+needed it. A Worker that later gains an R2 binding needs the same setting.

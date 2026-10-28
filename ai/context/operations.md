@@ -150,13 +150,20 @@ Payload CMS 3.89 on Workers (OpenNext), deployed as `lumen-payload-cms-<env>`
 on stage and prod, beside the fleet rather than inside it: nothing routes to
 it through `api-edge`, and no worker calls it.
 
-- **Database path:** its own Hyperdrive config, `lumen-payload-cms-<env>`
-  (`infra/terraform/cloudflare-hyperdrive-cms`), over the same Supabase origin
+- **Database path:** its own Hyperdrive config, `stg-lumen-payload-cms-stage`
+  and `prod-lumen-payload-cms-prod` (`infra/terraform/cloudflare-hyperdrive-cms`), over the same Supabase origin
   as the fleet's, with query caching disabled so an editor reads back what they
   saved. Each query or transaction opens its own client; Hyperdrive pools.
-- **Schema:** `cms`, created by migration `200_cms_payload_core` in the
-  `db-migrate` lane, like every other schema. Payload never pushes or migrates
-  the database itself.
+- **Schema:** `cms`, created by migrations `200_cms_payload_core` and
+  `205_cms_media` in the `db-migrate` lane, like every other schema. Payload
+  never pushes or migrates the database itself.
+- **Media:** images (JPEG, PNG, GIF, WebP, AVIF) and PDFs up to 10 MiB, with
+  alt text, in a private R2 bucket per environment
+  (`stg-lumen-payload-cms-media-stage`, `prod-lumen-payload-cms-media-prod`;
+  `infra/terraform/cloudflare-r2-cms`), bound to the Worker as `R2_MEDIA` and
+  served at `/api/media/file/<filename>`. SVG is refused. The bucket component
+  runs with `CLOUDFLARE_R2_TOKEN` (project rung, from the Cloudflare
+  connection's `r2-data` template, rotated by the platform every 30 days).
 - **Secrets:** `CMS_PAYLOAD_SECRET` is generated and published by
   `cloudflare-hyperdrive-cms` (nobody chooses or sees it) and pushed to the
   Worker as `PAYLOAD_SECRET`. `CMS_SETUP_TOKEN` exists only if the owner sets
@@ -187,6 +194,7 @@ curl -fsS $B/health                                   # {"status":"ok","db":"ok"
 curl -s -o /dev/null -w '%{http_code}\n' $B/admin      # 200
 curl -s -o /dev/null -w '%{http_code}\n' -X POST $B/api/users/first-register \
   -H content-type:application/json -d '{"email":"x@example.com","password":"x"}'   # 403 until setup is opened
+curl -fsS "$B/api/media?limit=1"                       # the media collection answers
 ```
 
 The CMS lane's smoke check asserts the first two after every deploy.
@@ -200,10 +208,15 @@ The CMS lane's smoke check asserts the first two after every deploy.
   stage *and* prod, but `dependsOn` only orders within one environment.
   Land `cloudflare-hyperdrive-cms` before the CMS (as this repository did),
   or re-run the CMS lanes once both environments' apply has published.
-- **Media uploads** wait on R2 (milestone PC4 of `lumen-payload-cms`): the
-  brokered `workers-deploy` token cannot create buckets, so an owner mints
-  `CLOUDFLARE_R2_TOKEN` from the Cloudflare connection's `r2-data` template
-  first.
+- **R2 needs two owner steps, once per Cloudflare account:** enabling R2 in
+  the dashboard (without it a bucket apply fails with "Please enable R2 through
+  the Cloudflare Dashboard. (10042)"), and minting `CLOUDFLARE_R2_TOKEN` from
+  the `r2-data` template, because the brokered `workers-deploy` token cannot
+  create buckets. Both were done for this account on 2026-10-28.
+- **The CMS deploys with `skipResourceProvisioning: true`** (stack-tectonic
+  0.21.0 or later). Without it, wrangler reads the R2 bucket with the
+  `workers-deploy` token before the upload and fails with "Authentication
+  error [code: 10000]". Any Worker that gains an R2 binding needs the same.
 
 ## Setting the domain later
 
