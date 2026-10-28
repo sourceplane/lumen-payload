@@ -89,7 +89,8 @@ browser ──► lumen-payload-cms-<env> (Worker)
   template. They read per request, uncached, with the person's own token, and
   render on the server: the browser never calls api-edge for them. Forms post
   to `/lumen/*` route handlers that accept only a same-origin post from staff
-  and answer `303` back to the page. The console's framework-free models
+  and answer `303` back to the page, or, for checkout and the customer portal,
+  to the payment provider's https page (the only external redirect). The console's framework-free models
   (`src/lib/lumen/models/`) are copied, not shared: the console is retired in
   PX4.
 - **Pinned versions.** Payload 3.89.0 hashes passwords with 25,000 PBKDF2
@@ -103,6 +104,6 @@ browser ──► lumen-payload-cms-<env> (Worker)
 
 ## Out of scope here
 
-Billing and plan in the admin (PX3), the console URL opening the admin (PX4), serving content through `api-edge`, per-tenant content, and image derivatives: resizing, cropping and focal
+The console URL opening the admin (PX4), serving content through `api-edge`, per-tenant content, and image derivatives: resizing, cropping and focal
 points need `sharp`, which does not run on Workers, so files are stored and
 served as uploaded.

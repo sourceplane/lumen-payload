@@ -168,7 +168,8 @@ it through `api-edge`, and no worker calls it.
   passwords; a new account is pending until an admin gives it a role, and
   admins invite people by creating a user with their email). Its *Account*
   nav group holds the Lumen account pages: Profile, Security activity,
-  Organization and Notifications.
+  Organization, Notifications and Billing & plan (checkout and the customer
+  portal are the payment provider's pages).
 - **Secrets:** `CMS_PAYLOAD_SECRET` is generated and published by
   `cloudflare-hyperdrive-cms` (nobody chooses or sees it) and pushed to the
   Worker as `PAYLOAD_SECRET`. `CMS_SETUP_TOKEN` exists only if the owner sets
