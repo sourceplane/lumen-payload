@@ -14,6 +14,8 @@ spec:
     - "pnpm-lock.yaml"
     - "infra/terraform/cloudflare-r2-cms/docs/**"
     - "tasks/PC-7.TaskContract.yaml"
+    # The stack pin: 0.21.0 lets the CMS deploy skip wrangler's R2 check.
+    - "intent.yaml"
   deps:
     - "PC-5"
   doneWhen:

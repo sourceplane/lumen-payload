@@ -109,6 +109,12 @@ real R2 adapter.
   - `{"db":"error"}`: Payload started but the query failed: check that
     `cloudflare-hyperdrive-cms` applied, that the deploy rendered the right
     `HYPERDRIVE_CMS` id, and that db-migrate applied migration 200.
+- **Deploy: "Authentication error [code: 10000]" on `/r2/buckets/<name>`.**
+  Wrangler's resource provisioning checked the bucket with the brokered
+  `workers-deploy` token, which has no R2 permission. `skipResourceProvisioning:
+  true` in `component.yaml` turns that check off (stack-tectonic 0.21.0 and
+  later); check it is still set and the stack pin in `intent.yaml` has not
+  gone back below 0.21.0. The bucket itself comes from `cloudflare-r2-cms`.
 - **Uploads fail with "R2_MEDIA binding is missing".** The deploy rendered no
   `R2_MEDIA` binding: check that `cloudflare-r2-cms` applied for that
   environment and published `WIRING_CLOUDFLARE_R2_CMS`, then redeploy the CMS.
