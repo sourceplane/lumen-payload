@@ -6,9 +6,9 @@
     "hyperdrive_id": "00000000000000000000000000000013"
   },
   "cloudflare-r2-cms/stage": {
-    "bucket_name": "lumen-payload-cms-media-stage"
+    "bucket_name": "stg-lumen-payload-cms-media-stage"
   },
   "cloudflare-r2-cms/prod": {
-    "bucket_name": "lumen-payload-cms-media-prod"
+    "bucket_name": "prod-lumen-payload-cms-media-prod"
   }
 }

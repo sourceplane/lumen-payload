@@ -44,8 +44,8 @@ curl -fsS "$B/api/media?limit=5"                      # media, anonymously reada
 Staff upload images (JPEG, PNG, GIF, WebP, AVIF) and PDFs in *Media* in
 `/admin`, or embed them from a page's or post's rich text. Each upload needs
 alt text and is at most 10 MiB; SVG is refused. Files are stored in the
-environment's R2 bucket (`lumen-payload-cms-media-<env>`,
-`infra/terraform/cloudflare-r2-cms`) and served at
+environment's R2 bucket (`stg-lumen-payload-cms-media-stage`,
+`prod-lumen-payload-cms-media-prod`; `infra/terraform/cloudflare-r2-cms`) and served at
 `/api/media/file/<filename>` to anyone. A second file with the same name gets
 a suffix (`photo-1.jpg`). Only admins delete media; deleting removes the
 object from the bucket too.

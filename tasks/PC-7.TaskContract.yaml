@@ -12,6 +12,7 @@ spec:
     - "packages/db/src/migrations/205_cms_media/**"
     - "tests/db/src/cms-migration.test.ts"
     - "pnpm-lock.yaml"
+    - "infra/terraform/cloudflare-r2-cms/docs/**"
     - "tasks/PC-7.TaskContract.yaml"
   deps:
     - "PC-5"

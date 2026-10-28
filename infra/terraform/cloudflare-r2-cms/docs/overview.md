@@ -4,7 +4,7 @@ The CMS's private media bucket per environment, on Cloudflare R2.
 
 Manages, for `stage` and `prod` (`dev` is verify-only and provisions nothing):
 
-- **`lumen-payload-cms-media-<env>`**, a private R2 bucket. Nothing reads it
+- **`<prefix>lumen-payload-cms-media-<env>`**, a private R2 bucket: `stg-lumen-payload-cms-media-stage` and `prod-lumen-payload-cms-media-prod` (the environment's `namespacePrefix` comes first). Nothing reads it
   directly: the CMS Worker binds it as `R2_MEDIA`, Payload writes uploads to it,
   and Payload serves them back through its own access rules at
   `/api/media/file/<filename>`.

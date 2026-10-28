@@ -12,7 +12,7 @@ browser ──► lumen-payload-cms-<env> (Worker)
               /api/<collection> REST         ┐
               /api/graphql      GraphQL       ├─ payload ─► HYPERDRIVE_CMS ─► Supabase Postgres, schema cms
               /health           liveness + db ┘     │        (cache disabled)
-              /api/media/file/* uploaded files      └──────► R2_MEDIA ─► lumen-payload-cms-media-<env>
+              /api/media/file/* uploaded files      └──────► R2_MEDIA ─► <prefix>lumen-payload-cms-media-<env>
               /setup            opens first-user setup (owner only)
 ```
 

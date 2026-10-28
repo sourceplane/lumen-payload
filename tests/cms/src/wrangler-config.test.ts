@@ -94,8 +94,11 @@ describe('wrangler config', () => {
     expect(rendered.env[env]!.vars).toEqual({ ENVIRONMENT: env })
   })
 
-  it.each(['stage', 'prod'])('%s binds R2_MEDIA to its own media bucket', (env) => {
-    expect(rendered.env[env]!.r2_buckets).toEqual([{ binding: 'R2_MEDIA', bucket_name: `lumen-payload-cms-media-${env}` }])
+  it.each([
+    ['stage', 'stg-lumen-payload-cms-media-stage'],
+    ['prod', 'prod-lumen-payload-cms-media-prod'],
+  ])('%s binds R2_MEDIA to its own media bucket', (env, bucket) => {
+    expect(rendered.env[env]!.r2_buckets).toEqual([{ binding: 'R2_MEDIA', bucket_name: bucket }])
   })
 
   it('dev binds no database and no bucket: it never deploys', () => {
