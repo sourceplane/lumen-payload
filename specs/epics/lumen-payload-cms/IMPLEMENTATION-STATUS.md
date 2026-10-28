@@ -28,6 +28,25 @@ On both `https://lumen-payload-cms-stage.nexo-7be.workers.dev` and
 
 The CMS lane's smoke check asserted the first two after each deploy.
 
+Media (PC4), after #18's main run (40666021733) deployed both environments:
+
+- The deploy log of each environment lists `env.R2_MEDIA` bound to that
+  environment's bucket (`stg-lumen-payload-cms-media-stage`,
+  `prod-lumen-payload-cms-media-prod`), deployed with the brokered
+  `workers-deploy` token and `--x-provision=false`.
+- `GET /api/media` answers an empty, anonymous-readable list.
+- An anonymous upload (`POST /api/media`) answers 403.
+- The CMS suite (65 tests, including the media suite) passed in each lane.
+
+**Not yet verified live: a staff upload served back from R2.** It needs a
+staff account, and none exists on either environment: the admin is closed until
+the owner sets `CMS_SETUP_TOKEN` and opens `/setup`. The same path ran
+end to end on the built Worker in workerd with a local R2 bucket (upload, the
+file served back byte for byte and present in the bucket, SVG, missing alt text
+and over-limit uploads refused, editor delete refused, admin delete removing
+it from the bucket). The first owner upload on stage is the live check
+(`apps/cms/docs/runbook.md`, Media).
+
 ## Departures from the design
 
 - **The wiring and the Payload secret are optional references.** The CMS

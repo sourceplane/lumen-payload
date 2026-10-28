@@ -138,5 +138,7 @@ with "Authentication error [code: 10000]" on `/r2/buckets/<name>`, after
 variable or config field to turn it off, only `--x-provision=false`.
 stack-tectonic 0.21.0 (sourceplane/stack-tectonic#22) added
 `skipResourceProvisioning`, and the CMS sets it (sourceplane/lumen-payload#18).
-Terraform owns the bucket, so nothing is lost. A Worker that later gains an R2
-binding needs the same setting.
+Terraform owns the bucket, so nothing is lost. Main run 40666021733 then
+deployed both environments with `R2_MEDIA` bound, so the Workers upload accepts
+an R2 binding from a token without R2 permission; only the provisioning check
+needed it. A Worker that later gains an R2 binding needs the same setting.
