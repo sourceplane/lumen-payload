@@ -201,7 +201,7 @@ The CMS lane's smoke check asserts the first two after every deploy.
 
 ### Caveats
 
-- **Workers Paid.** The bundle is about 3.8 MiB compressed, over Free's
+- **Workers Paid.** The bundle is about 3.3 MiB compressed, over Free's
   3 MiB, and Payload needs more CPU than Free's 10 ms.
 - **First landing of a wiring source.** The CMS's wrangler config names
   both environments' Hyperdrive ids, so each deploy needs the wiring of
