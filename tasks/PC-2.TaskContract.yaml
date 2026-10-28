@@ -1,0 +1,16 @@
+apiVersion: orun.io/v1
+kind: TaskContract
+metadata:
+  name: PC-2
+  title: "PC1: the CMS database path (cloudflare-hyperdrive-cms)"
+spec:
+  goal: "A cache-disabled Hyperdrive config per environment and a generated Payload secret exist on stage and prod, published as WIRING_CLOUDFLARE_HYPERDRIVE_CMS and CMS_PAYLOAD_SECRET."
+  affects:
+    - "infra/terraform/cloudflare-hyperdrive-cms/**"
+    - "tasks/PC-2.TaskContract.yaml"
+  doneWhen:
+    - "the PR's plan-only lanes for cloudflare-hyperdrive-cms on stage and prod are green"
+    - "the merge's apply lanes for cloudflare-hyperdrive-cms on stage and prod are green"
+    - "cloudflare-hyperdrive is in neither plan"
+  gates:
+    - "terraform validate and fmt -check pass for the new root"
