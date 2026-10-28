@@ -192,5 +192,14 @@ export const manifest: MigrationManifest = {
       description:
         "Payload CMS schema (lumen-payload-cms PC2) — schema cms with staff users and sessions, pages and posts with drafts and versions, categories, and Payload's lock, preference and migration tables; generated from apps/cms/payload-migrations by scripts/payload-migration-to-sql.mjs",
     },
+    {
+      id: "205_cms_media",
+      context: "cms",
+      path: "205_cms_media/up.sql",
+      checksum:
+        "273965644d1e37061059ffb7538a1f943521453f452f9766403e0ad496e3f8d6",
+      description:
+        "Payload CMS media (lumen-payload-cms PC4) — the media upload collection's table (files live in the cloudflare-r2-cms bucket) and its column on Payload's document-lock relations; generated from apps/cms/payload-migrations by scripts/payload-migration-to-sql.mjs",
+    },
   ],
 };
