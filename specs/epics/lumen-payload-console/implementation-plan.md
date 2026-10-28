@@ -15,7 +15,7 @@ This doc set. **Done when** it is on `main`.
 - `users`:
   - `auth.disableLocalStrategy: { enableFields: true }` and the `lumen` strategy
   - `lumenUserId`
-  - the `pending` role, now the default
+  - `role` optional with no default (no role means pending)
   - `access.admin` for admin and editor only
 - Migration `206_cms_lumen_identity`, converted from Payload's migration.
 - The sign-in view (email code, GitHub, Google), `/auth/lumen/callback`,

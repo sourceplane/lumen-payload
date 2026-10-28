@@ -81,10 +81,13 @@ server only).
 
 ## 3. Accounts and roles
 
-`users` gains **`lumenUserId`** (`usr_…`, unique, read-only) and a third role,
-**`pending`**, which becomes the default. These come from migration
-`206_cms_lumen_identity`, converted like every CMS migration. Mapping a
-signed-in Lumen user:
+`users` gains **`lumenUserId`** (`usr_…`, unique, read-only), and `role`
+becomes optional with no default: an account with **no role is pending**. Both
+come from migration `206_cms_lumen_identity`, converted like every CMS
+migration. A new enum value is avoided on purpose: db-migrate runs each
+migration in one transaction, and Postgres refuses to use an enum value added
+in the same transaction (for example as a column default). Mapping a signed-in
+Lumen user:
 
 1. **A row with that `lumenUserId`:** that is the user.
 2. **A row with the same email and no `lumenUserId`:** link it. This covers
@@ -94,7 +97,7 @@ signed-in Lumen user:
    - If **no admin exists and the request carries a valid setup cookie**, the
      role is `admin`. The owner opens setup with `CMS_SETUP_TOKEN`, exactly as
      today.
-   - Otherwise the role is `pending`.
+   - Otherwise it has no role: pending.
    - The same rule promotes an existing *pending* user who signs in through
      setup while there is still no admin.
 

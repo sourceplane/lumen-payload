@@ -44,7 +44,7 @@ the CMS, its schema and its media stay exactly as that epic built them.
 | Milestone | What it lands | Done when |
 |---|---|---|
 | PX0 — the spec | this doc set | merged to `main` |
-| PX1 — Lumen sign-in | the `lumen` auth strategy, the sign-in page (email code, GitHub, Google), the session cookie, account mapping and the pending role (migration `206_cms_lumen_identity`), sign-out | on stage, an email-code sign-in lands in the admin as *pending*; with setup opened it lands as admin; sign-out revokes the Lumen session |
+| PX1 — Lumen sign-in | the `lumen` auth strategy, the sign-in page (email code, GitHub, Google), the session cookie, account mapping and pending accounts (migration `206_cms_lumen_identity`), sign-out | on stage, an email-code sign-in lands in the admin as *pending*; with setup opened it lands as admin; sign-out revokes the Lumen session |
 | PX2 — your account and organization | Profile, Security activity, Organization and Notifications as admin pages | on stage, a signed-in user edits their display name and notification settings from the admin and reads their organization and security events |
 | PX3 — billing and plan | Billing & plan in the admin: summary, entitlements, invoices, change plan, the provider's portal | on stage, the page shows the plan and opens checkout and the portal |
 | PX4 — the front door | the Lumen console URL redirects to the CMS; the CMS root opens the admin; product URLs, OAuth return and billing return point at the CMS; branding | opening `lumen-payload-web-console-next-<env>` lands in the Payload admin on stage and prod |
