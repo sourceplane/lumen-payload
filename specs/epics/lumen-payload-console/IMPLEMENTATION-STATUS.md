@@ -5,12 +5,55 @@ the code departed from `design.md`.
 
 | Milestone | State | PR |
 |---|---|---|
-| PX0 — the spec | Merged | sourceplane/lumen-payload#21 |
-| PX1 — Lumen sign-in | Merged; stage partly deployed, the rest waits on the credential-mint quota | sourceplane/lumen-payload#22 |
-| PX2 — your account and organization | In review | — |
-| PX3 — billing and plan | In review | — |
-| PX4 — the front door | In review | — |
-| PX5 — the record | Not started | — |
+| PX0 — the spec | Shipped | sourceplane/lumen-payload#21 |
+| PX1 — Lumen sign-in | Shipped; live on stage and prod | sourceplane/lumen-payload#22 |
+| PX2 — your account and organization | Shipped; live on stage and prod | sourceplane/lumen-payload#23 |
+| PX3 — billing and plan | Shipped; live on stage and prod | sourceplane/lumen-payload#24 |
+| PX4 — the front door | Shipped; live on stage and prod | sourceplane/lumen-payload#25 |
+| PX5 — the record | Shipped | this change |
+
+## Live verification (2026-10-28)
+
+Each milestone was checked against the deployed Workers after its merge,
+with a Playwright run against stage's CMS and its real api-edge (stage shows
+the sign-in code, so a test account can sign in):
+
+- **PX1, stage: 35/35.** A newcomer signs in and waits as pending; sign-out
+  revokes the Lumen session; the owner's setup token opens the first admin,
+  who promotes the newcomer; the OAuth return path; the session hand-in
+  refuses another origin, no origin and bogus tokens; a sibling Worker on the
+  same site cannot write with the admin cookie; first-register and password
+  login answer 403. The setup token was then revoked, and the owner's own
+  account was invited as admin.
+- **PX2, stage: 26/26.** The Account nav group; the display name saved and
+  read back from Lumen and the `users` row; security activity listing this
+  sign-in (after the identity-worker fix); the organization; a notification
+  category off and back on, read back from Lumen; cross-origin and pending
+  posts refused; 15 own-session reads in a row all answer 200 (the `account`
+  rate family).
+- **PX3, stage: 11/11.** Plan, plans, entitlements and invoices render; Upgrade
+  comes back with stage's explanation (no payment provider there); the
+  checkout return posts one reconcile; opening the return link alone writes
+  nothing.
+- **PX4, stage and prod.** The console URL's `/`, `/login`, `/account`,
+  `/orgs/<slug>/billing` and `/auth/callback?…` answer 308 to `/admin`,
+  `/admin/login`, `/admin/account`, `/admin/organization/billing` and
+  `/auth/lumen/callback?…` (query kept) on the same environment's CMS;
+  following the console URL lands on the CMS sign-in, titled *Login — Lumen
+  Payload*; the CMS root redirects to `/admin`.
+- **Prod, read-only:** `/health` ok, `/admin` shows the Lumen sign-in,
+  password login and `/setup` without the owner's token answer 403. Prod's
+  first admin waits for the owner.
+
+**A note on the browser runs.** In the sandbox that ran these checks,
+Chromium's requests for the admin's route chunk
+(`/_next/static/chunks/app/(payload)/admin/%5B%5B...segments%5D%5D/page-*.js`)
+came back as a 307 to the same URL, looping, while byte-identical requests
+from curl, Python and Node got 200 from the same edge (and the
+multi-tenant-saas-2 CMS, without these changes, behaved the same). The runs
+therefore fetched `/_next/static/**` through Playwright's own network stack.
+If a person's browser ever shows `ERR_TOO_MANY_REDIRECTS` on `/admin`, this is
+where to look.
 
 ## Departures from the design
 
@@ -71,6 +114,16 @@ the code departed from `design.md`.
 - **PX4, the billing fallback return.** `POLAR_SUCCESS_URL` is the CMS billing
   page on workers.dev, no longer a custom-domain placeholder, so it left the
   "Setting the domain later" list.
+- **Operations: rotated Cloudflare tokens.** PX1's deploy ran out of the
+  workspace's 200 credential mints per rolling 24 hours: every CI job minted
+  fresh Cloudflare tokens, and the account-id fact counted as a mint too.
+  `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_HYPERDRIVE_TOKEN` now live at the
+  project rung as rotated secrets (minted once, re-minted every 30 days),
+  shadowing the workspace's brokered bindings. In Orun Cloud, fact templates
+  no longer count toward the limit and the orphan sweep now deletes expired
+  minted tokens hourly (sourceplane/orun-cloud#2106, with its follow-up
+  sourceplane/orun-cloud#2112), and the identity-worker fix from PX2 landed in
+  the baseline too (sourceplane/orun-cloud#2114).
 - **PX4, branding.** The admin's title suffix is *Lumen Payload*, and the
   logo and icon are a glyph with the product name, drawn in the admin's text
   colour. `.rebrand/values.json` carries a name, not a logo file.

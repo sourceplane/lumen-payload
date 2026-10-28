@@ -1,0 +1,20 @@
+apiVersion: orun.io/v1
+kind: TaskContract
+metadata:
+  name: PX-6
+  title: "PX5: the record — lumen-payload-console shipped"
+spec:
+  goal: "The repository describes the product as it now runs: the Payload admin is the console, the old console URL redirects into it, and the epic's status reads shipped with each milestone's PR, its live verification and every departure from the design."
+  affects:
+    - "AGENTS.md"
+    - "README.md"
+    - "ai/context/operations.md"
+    - "apps/cms/docs/**"
+    - "apps/web-console-next/docs/**"
+    - "specs/epics/lumen-payload-console/**"
+    - "tasks/PX-6.TaskContract.yaml"
+  doneWhen:
+    - "AGENTS.md and ai/context/operations.md name the CMS as the console and the console Worker as a redirect"
+    - "the operations guide's secrets model lists the rotated Cloudflare tokens at the project rung"
+    - "IMPLEMENTATION-STATUS.md lists PX0 to PX5 as shipped, with their PRs and the stage and prod verification"
+  gates: []
