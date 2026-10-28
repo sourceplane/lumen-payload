@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 
-export const metadata = { title: 'Lumen Payload — CMS' }
+export const metadata = { title: 'Lumen Payload' }
 
 export default function SiteLayout({ children }: { children: ReactNode }) {
   return (

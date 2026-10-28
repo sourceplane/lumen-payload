@@ -47,7 +47,7 @@ vars) for runtime CORS decisions.
 |-----------|----------|-------------|
 | `baseDomain` | yes | Root domain (e.g. `lumen-payload.example.com`) |
 | `zoneMode` | yes | `existing` or `managed` |
-| `workerNamePrefix` | yes | Worker name prefix (e.g. `lumen-payload-web-console-next`); fully-qualified service name is `{workerNamePrefix}-{environment}` |
+| `workerNamePrefix` | yes | Worker name prefix (`lumen-payload-cms`, the CMS, which is the console); fully-qualified service name is `{workerNamePrefix}-{environment}` |
 | `stackName` | yes | Terraform stack identifier |
 | `terraformDir` | yes | Path to Terraform root |
 | `terraformVersion` | yes | Terraform CLI version |
@@ -83,9 +83,9 @@ After merge to main, verify:
 
 1. `terraform apply` succeeds in CI (`github-push-main` trigger).
 2. Workers custom domains show `active` status in Cloudflare (Workers → the
-   `lumen-payload-web-console-next-{env}` Worker → Triggers → Custom Domains).
-3. `https://stage.lumen-payload.example.com/` serves the stage console (web-console-next).
-4. `https://prod.lumen-payload.example.com/` serves the prod console (web-console-next).
+   `lumen-payload-cms-{env}` Worker → Triggers → Custom Domains).
+3. `https://stage.lumen-payload.example.com/` serves the stage console (the CMS).
+4. `https://prod.lumen-payload.example.com/` serves the prod console (the CMS).
 5. SSL certificates are provisioned (automatic via Cloudflare).
 
 ## Outputs

@@ -1,11 +1,34 @@
 # web-console-next
 
-Next.js 15 + opennextjs/cloudflare delivery of the Lumen Payload web console (per-environment, Workers + Static Assets)
+The Lumen console's old URL, kept as a redirect to the Payload admin, which is
+the product's console now (lumen-payload-console PX4).
 
-The lumen-payload console UI — Next.js compiled to a Cloudflare Worker with
-Static Assets, configured against the API edge. Public at
-`https://lumen-payload-web-console-next-{stage,prod}.nexo-7be.workers.dev`.
+| | stage | prod |
+|---|---|---|
+| URL | https://lumen-payload-web-console-next-stage.nexo-7be.workers.dev | https://lumen-payload-web-console-next-prod.nexo-7be.workers.dev |
+| Goes to | https://lumen-payload-cms-stage.nexo-7be.workers.dev/admin | https://lumen-payload-cms-prod.nexo-7be.workers.dev/admin |
+
+## Where each old page goes
+
+| Old console path | In the CMS |
+|---|---|
+| `/`, and anything not below | `/admin` |
+| `/login` | `/admin/login` |
+| `/auth/callback` (the OAuth return) | `/auth/lumen/callback` (the browser keeps the `#token` fragment) |
+| `/account`, `/account/security` | `/admin/account`, `/admin/account/security` |
+| `/orgs`, `/orgs/<slug>`, `/orgs/<slug>/settings` | `/admin/organization` |
+| `/orgs/<slug>/settings/notifications` | `/admin/organization/notifications` |
+| `/orgs/<slug>/settings/billing` (and `…/change-plan`, `/orgs/<slug>/billing`) | `/admin/organization/billing` |
+
+The query string is kept (a billing return's `?checkout=complete` still
+reconciles the plan).
 
 ## Depends on
 
-- **api-edge** — Cloudflare Worker for the API edge Runtime
+- **cms**: the redirect's target; the deploy's smoke check follows the
+  redirect to the CMS sign-in page.
+
+## Verified by
+
+- **web-console-next-tests** (the redirect map, run in this component's own
+  build) and the deploy's smoke check.

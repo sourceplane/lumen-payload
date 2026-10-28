@@ -1,6 +1,6 @@
 # cms
 
-Payload CMS on Cloudflare Workers: the admin panel at `/admin`, the REST API
+Payload CMS on Cloudflare Workers, and the product's console: the admin panel at `/admin` (`/` and the old console URL open it), the REST API
 at `/api/<collection>` and GraphQL at `/api/graphql`, over Postgres schema
 `cms`, deployed beside the fleet as `lumen-payload-cms-<env>`.
 
