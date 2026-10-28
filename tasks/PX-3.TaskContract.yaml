@@ -1,0 +1,26 @@
+apiVersion: orun.io/v1
+kind: TaskContract
+metadata:
+  name: PX-3
+  title: "PX2: your account and organization in the Payload admin"
+spec:
+  goal: "Admins and editors read and change their Lumen account from the Payload admin: Profile (display name), Security activity, Organization and Notifications, under an Account group in the nav, through api-edge with their own session."
+  affects:
+    - "apps/cms/**"
+    - "tests/cms/**"
+    - "apps/identity-worker/src/handlers/security-events.ts"
+    - "apps/api-edge/src/rate-limit.ts"
+    - "apps/api-edge/src/auth-facade.ts"
+    - "tests/api-edge/src/rate-limit.test.ts"
+    - "tests/identity-worker/src/security-events.test.ts"
+    - "pnpm-lock.yaml"
+    - "ai/context/operations.md"
+    - "specs/epics/lumen-payload-console/IMPLEMENTATION-STATUS.md"
+    - "tasks/PX-3.TaskContract.yaml"
+  doneWhen:
+    - "on stage, the display name changes from the admin and reads back through GET /v1/auth/profile"
+    - "on stage, a notification category turns off from the admin and reads back through GET /v1/notifications/preferences"
+    - "on stage, the Organization and Security activity pages render the person's organization and sign-in events"
+    - "a pending or signed-out visitor cannot open the pages or post their forms"
+    - "a signed-in bearer reading its own account is rate-limited at 60 a minute, sign-in at 10"
+  gates: []

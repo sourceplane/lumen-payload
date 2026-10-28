@@ -23,8 +23,27 @@ a `users` row by `lumenUserId`, creating the row the first time.
 A new row has **no role**, which means *pending*: the person is signed in but
 sees "Waiting for access" until an admin opens *Users* and makes them an
 `editor` or `admin`. A row an admin created beforehand with the same email
-(an invitation) is linked on that person's first sign-in and keeps its role.
-Signing out (the admin's log-out button) revokes the Lumen session too.
+(an invitation) is linked on that person's first sign-in and keeps its role:
+to invite someone, open *Users → Create new*, enter their email and pick a
+role. Signing out (the admin's log-out button) revokes the Lumen session too.
+
+## Your account
+
+The admin's nav has an **Account** group: the same Lumen account pages the
+console had, for admins and editors (a pending account sees none of them).
+Each page reads Lumen through `api-edge` with the person's own session when it
+loads; forms post to `/lumen/*` on the CMS, which calls `api-edge` and comes
+back to the page with *Saved.* or what went wrong.
+
+| Page | Path | Shows | Changes |
+|---|---|---|---|
+| Profile | `/admin/account` (Payload's account page, replaced) | email, CMS role, Lumen user id | display name (copied onto the `users` row) |
+| Security activity | `/admin/account/security` | sign-ins, codes and sessions, newest first, 50 a page | — |
+| Organization | `/admin/organization` | the Lumen organization (Solo: the personal one) | — (renaming is not in the API) |
+| Notifications | `/admin/organization/notifications` | email categories for that organization | which categories Lumen emails |
+
+A page that cannot reach Lumen says so (for example *The CMS could not reach
+Lumen*) instead of failing: check `api-edge` and the `LUMEN_API` binding.
 
 ## Open the admin (first admin)
 
@@ -147,6 +166,10 @@ real R2 adapter.
   environment and published `WIRING_CLOUDFLARE_R2_CMS`, then redeploy the CMS.
 - **An upload answers 413.** It is over 10 MiB (`MEDIA_MAX_BYTES` in
   `src/collections/Media.ts`).
+- **An account page says "Lumen answered with an error (internal_error)".**
+  api-edge or the worker behind it failed; its logs carry the request id.
+  Security activity answered 503 for everyone until identity-worker queried
+  events by the user's UUID rather than its public `usr_` id (PX2).
 - **Deploy: "exceeds the size limit" or CPU errors (1102).** The account is on
   Workers Free. The CMS needs Workers Paid.
 - **Requests hang for 10 s, then 500.** A regression to a shared pool: the

@@ -27,6 +27,10 @@ Published pages, posts and categories, and all media, are readable by anyone
 through the API. Drafts, accounts and everything else need a staff session.
 Staff upload media; only admins delete it.
 
+The admin also has the person's **Lumen account pages** (Profile, Security
+activity, Organization, Notifications), read from and saved to Lumen through
+`api-edge`; nothing of them is stored in the CMS but the display name.
+
 ## Depends on
 
 - **cloudflare-hyperdrive-cms**: its database path (cache disabled) and its
@@ -35,7 +39,8 @@ Staff upload media; only admins delete it.
 - **db-migrate**: applies schema `cms` (migrations `200_cms_payload_core`,
   `205_cms_media` and `206_cms_lumen_identity`) before the CMS deploys.
 - **api-edge**: the CMS asks it, over a service binding, whose Lumen session a
-  request carries, and ends the session on sign-out. Its CORS lets the CMS's
+  request carries, ends the session on sign-out, and reads and changes the
+  account pages' data with the person's session. Its CORS lets the CMS's
   sign-in page call the auth routes, and identity-worker's OAuth return
   allowlist includes the CMS.
 
