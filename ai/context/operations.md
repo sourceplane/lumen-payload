@@ -213,6 +213,10 @@ The CMS lane's smoke check asserts the first two after every deploy.
   the Cloudflare Dashboard. (10042)"), and minting `CLOUDFLARE_R2_TOKEN` from
   the `r2-data` template, because the brokered `workers-deploy` token cannot
   create buckets. Both were done for this account on 2026-10-28.
+- **The CMS deploys with `skipResourceProvisioning: true`** (stack-tectonic
+  0.21.0 or later). Without it, wrangler reads the R2 bucket with the
+  `workers-deploy` token before the upload and fails with "Authentication
+  error [code: 10000]". Any Worker that gains an R2 binding needs the same.
 
 ## Setting the domain later
 

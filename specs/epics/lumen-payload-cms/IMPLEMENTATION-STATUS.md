@@ -9,7 +9,7 @@ the code departed from `design.md`.
 | PC1 — the CMS database path | ✅ Shipped: `lumen-payload-cms-stage` and `-prod` applied, wiring and `CMS_PAYLOAD_SECRET` published | sourceplane/lumen-payload#7 |
 | PC2 — the CMS schema | ✅ Shipped: `200_cms_payload_core` applied on stage and prod | sourceplane/lumen-payload#8 |
 | PC3 — the CMS on Workers | ✅ Shipped: `lumen-payload-cms-stage` and `-prod` live | sourceplane/lumen-payload#9 |
-| PC4 — media on R2 | ⏸ Gated: needs `CLOUDFLARE_R2_TOKEN` from the Cloudflare connection's `r2-data` template (PC-F) | — |
+| PC4 — media on R2 | ✅ Shipped: buckets `stg-lumen-payload-cms-media-stage` and `prod-lumen-payload-cms-media-prod` applied, `media` live on stage and prod | sourceplane/lumen-payload#15 (bucket), #16 (media), #18 (deploy fix), #17 (record) |
 | PC5 — the record | ✅ Shipped | sourceplane/lumen-payload#14 |
 
 ## Live verification (2026-10-28)
@@ -46,7 +46,8 @@ The CMS lane's smoke check asserted the first two after each deploy.
 - **The CMS suite runs inside the CMS lane's build** (PC-I): the `cms`
   component's `buildCommand` runs `tests/cms` after the OpenNext build, and the
   suite's own `build` script runs it too, because stack-tectonic 0.20.0's
-  turbo-package lanes ignore their command parameters.
+  turbo-package lanes ignored their command parameters (0.20.1 fixed that;
+  this repository pins 0.21.0 since #18).
 - **Landing order.** PC1, PC2 and PC3 were developed as a stack and landed one
   at a time after the baseline's bootstrap finished. PC2's own run was
   plan-only (lanes run only for pull requests into `main`, and it was pushed
@@ -56,8 +57,38 @@ The CMS lane's smoke check asserted the first two after each deploy.
   baseline's own 04-workers phase stopped on Free's cron limit, and the owner
   upgraded the account.
 
+- **PC4 landed as two tasks and three pull requests.** PC-5 is the bucket
+  (`cloudflare-r2-cms`, #15) and PC-7 is the CMS side (#16), so the bucket
+  could apply and publish its wiring on both environments before the CMS
+  rendered `R2_MEDIA` (PC-J). #18 then moved the stack pin to 0.21.0 so the CMS
+  could deploy at all (PC-K).
+- **Resource names carry the environment's namespace prefix.** The plan says
+  `lumen-payload-cms-media-<env>`; Terraform builds every name from the
+  environment's `namespacePrefix`, so the buckets are
+  `stg-lumen-payload-cms-media-stage` and `prod-lumen-payload-cms-media-prod`.
+  The same holds for the Hyperdrive configs (`stg-lumen-payload-cms-stage`,
+  `prod-lumen-payload-cms-prod`).
+- **The R2 token is a rotated project secret.** `CLOUDFLARE_R2_TOKEN` sits on
+  the project's rung, minted from the `r2-data` template in rotated mode (the
+  platform rotates it every 30 days). It is not a value anyone pasted, and only
+  `cloudflare-r2-cms` reads it.
+- **Uploads over the limit are refused, not truncated.** Payload's default
+  `upload.limits.fileSize` stops reading at the limit and stores what it has:
+  in the local run an 11 MiB PNG came back 201, stored cut off at the limit. The root config sets
+  `abortOnLimit: true`, so an upload over 10 MiB answers 413 and nothing is
+  stored.
+- **No SVG, and no resizing.** The plan said "images". SVG is refused because
+  it can carry script on the admin's origin. workerd has no `sharp`, so there
+  is no cropping, focal point or image sizes: a file is stored and served as
+  uploaded.
+
 ## Found while landing
 
 - **PC-J:** the first landing of a wiring source and its consumer in one push
   races across environments. Avoided here by landing PC1 on its own; seen and
   recovered on multi-tenant-saas-2.
+- **PC-K:** wrangler's default resource provisioning reads every R2 bucket
+  binding with the deploy token, which has no R2 permission. Fixed by
+  stack-tectonic 0.21.0's `skipResourceProvisioning` (sourceplane/stack-tectonic#22).
+- **R2 is off on a new Cloudflare account** until the owner enables it in the
+  dashboard (10042). This account's owner did so on 2026-10-28.
