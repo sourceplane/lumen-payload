@@ -9,7 +9,7 @@ the code departed from `design.md`.
 | PX1 — Lumen sign-in | Merged; stage partly deployed, the rest waits on the credential-mint quota | sourceplane/lumen-payload#22 |
 | PX2 — your account and organization | In review | — |
 | PX3 — billing and plan | In review | — |
-| PX4 — the front door | Not started | — |
+| PX4 — the front door | In review | — |
 | PX5 — the record | Not started | — |
 
 ## Departures from the design
@@ -61,3 +61,16 @@ the code departed from `design.md`.
   `provider_unavailable` for the portal and `plan_not_purchasable` for
   checkout, so on stage *Upgrade* comes back with that explanation; the
   provider's pages could not be reached there.
+- **PX4, the console Worker.** It is a plain Worker compiled by `tsc` under
+  the same component, composition, lane and Worker name, rather than a
+  Next.js app with a redirect middleware. It serves only its own
+  `lumen-payload-web-console-next-<env>` hosts. The redirect tests run in the
+  console's own build, because `tests/web-console-next`'s lane (quick-check)
+  runs no tests. The smoke check now asserts the 308 and follows it into the
+  CMS.
+- **PX4, the billing fallback return.** `POLAR_SUCCESS_URL` is the CMS billing
+  page on workers.dev, no longer a custom-domain placeholder, so it left the
+  "Setting the domain later" list.
+- **PX4, branding.** The admin's title suffix is *Lumen Payload*, and the
+  logo and icon are a glyph with the product name, drawn in the admin's text
+  colour. `.rebrand/values.json` carries a name, not a logo file.

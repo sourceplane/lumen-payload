@@ -7,8 +7,9 @@ into `.open-next/worker.js` plus `.open-next/assets`, deployed by the
 itself, so the composition's `wrangler deploy` ships the whole build.
 
 ```
-browser ──► lumen-payload-cms-<env> (Worker)
-              /admin            Payload admin (React, server components)
+browser ──► lumen-payload-cms-<env> (Worker)            ◄──308── lumen-payload-web-console-next-<env> (the old console URL)
+              /                 308 → /admin
+              /admin            Payload admin (React, server components): the product's console
               /api/<collection> REST         ┐
               /api/graphql      GraphQL       ├─ payload ─► HYPERDRIVE_CMS ─► Supabase Postgres, schema cms
               /health           liveness + db ┘     │        (cache disabled)

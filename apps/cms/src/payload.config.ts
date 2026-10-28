@@ -42,7 +42,7 @@ export default buildConfig({
   admin: {
     user: Users.slug,
     importMap: { baseDir: path.resolve(dirname) },
-    meta: { titleSuffix: ' — CMS' },
+    meta: { titleSuffix: ' — Lumen Payload' },
     // Lumen sign-in replaces Payload's password views (lumen-payload-console
     // design §1, §3): Payload's local strategy is off on `users`.
     components: {
@@ -50,6 +50,7 @@ export default buildConfig({
       // the Lumen profile, and the rest are custom views under an Account
       // group in the nav.
       afterNavLinks: ['/components/admin/account/AccountNav#AccountNav'],
+      graphics: { Logo: '/components/admin/Brand#Logo', Icon: '/components/admin/Brand#Icon' },
       views: {
         login: { Component: '/components/admin/LumenLogin#LumenLogin' },
         unauthorized: { Component: '/components/admin/PendingAccess#PendingAccess' },

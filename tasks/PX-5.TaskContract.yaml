@@ -1,0 +1,23 @@
+apiVersion: orun.io/v1
+kind: TaskContract
+metadata:
+  name: PX-5
+  title: "PX4: the front door — the console URL opens the Payload admin"
+spec:
+  goal: "The product opens in the Payload admin: the CMS root goes to /admin, the Lumen console Worker answers every old path with a 308 to its place in the same environment's CMS (its UI and tests removed), intent.yaml's product URLs, the billing fallback return and the parked custom domain point at the CMS, and the admin carries the product's name and mark."
+  affects:
+    - "apps/web-console-next/**"
+    - "tests/web-console-next/**"
+    - "apps/cms/**"
+    - "apps/billing-worker/wrangler.template.jsonc"
+    - "infra/terraform/cloudflare-domain/**"
+    - "intent.yaml"
+    - "pnpm-lock.yaml"
+    - "ai/context/operations.md"
+    - "specs/epics/lumen-payload-console/IMPLEMENTATION-STATUS.md"
+    - "tasks/PX-5.TaskContract.yaml"
+  doneWhen:
+    - "on stage and prod, the console URL, its old paths and its OAuth callback path answer 308 into the CMS"
+    - "on stage and prod, following the console URL lands on the CMS sign-in, whose title reads Lumen Payload"
+    - "the CMS root redirects to /admin"
+  gates: []
