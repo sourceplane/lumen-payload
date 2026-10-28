@@ -69,4 +69,4 @@ spec:
     surface: policy
     runtime: cloudflare
 # ci: trigger full-component verification (orun v2.12.0 upgrade — PR #183)
-# orun: redeploy 04-workers as_fea059d4bc454b39ae15
+# orun: redeploy 04-workers as_1922a62fcb6b45fc8417
