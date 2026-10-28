@@ -9,6 +9,9 @@ spec:
     - "apps/cms/**"
     - "tests/cms/**"
     - "apps/identity-worker/src/handlers/security-events.ts"
+    - "apps/api-edge/src/rate-limit.ts"
+    - "apps/api-edge/src/auth-facade.ts"
+    - "tests/api-edge/src/rate-limit.test.ts"
     - "tests/identity-worker/src/security-events.test.ts"
     - "pnpm-lock.yaml"
     - "ai/context/operations.md"
@@ -19,4 +22,5 @@ spec:
     - "on stage, a notification category turns off from the admin and reads back through GET /v1/notifications/preferences"
     - "on stage, the Organization and Security activity pages render the person's organization and sign-in events"
     - "a pending or signed-out visitor cannot open the pages or post their forms"
+    - "a signed-in bearer reading its own account is rate-limited at 60 a minute, sign-in at 10"
   gates: []

@@ -112,6 +112,9 @@ describe('status lines', () => {
     expect(statusMessage({ error: 'too_long' })?.text).toMatch(/too long/)
     expect(statusMessage({ error: '<script>x</script>' })?.text).toBe('Lumen answered with an error (scriptxscript).')
     expect(statusMessage({})).toBeNull()
+    for (const key of ['constructor', 'toString', '__proto__', 'hasOwnProperty']) {
+      expect(typeof statusMessage({ error: key })?.text).toBe('string')
+    }
     expect(backTo('/admin/account', { error: 'a b' })).toBe('/admin/account?error=a+b')
   })
 })

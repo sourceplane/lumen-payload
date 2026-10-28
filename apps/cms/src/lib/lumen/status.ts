@@ -19,7 +19,9 @@ export type Status = { kind: 'saved' | 'error'; text: string }
 export function statusMessage(query: { saved?: string | undefined; error?: string | undefined }): Status | null {
   if (query.error) {
     const code = query.error.replace(/[^a-z0-9_.-]/gi, '').slice(0, 64)
-    return { kind: 'error', text: MESSAGES[code] ?? `Lumen answered with an error (${code || 'unknown'}).` }
+    // Own keys only: `?error=constructor` must not reach the page as a function.
+    const known = Object.hasOwn(MESSAGES, code) ? MESSAGES[code] : undefined
+    return { kind: 'error', text: known ?? `Lumen answered with an error (${code || 'unknown'}).` }
   }
   if (query.saved === '1') return { kind: 'saved', text: 'Saved.' }
   return null

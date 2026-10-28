@@ -64,14 +64,18 @@ browser ──► lumen-payload-cms-<env> (Worker)
   there are no CMS passwords, and `login`, `first-register` and password reset
   answer 403. The `lumen` strategy reads the `lumen_session` cookie, asks
   api-edge `GET /v1/auth/session` over the service binding (answers cached
-  30 s per token, keyed by its hash; failures are not cached), and finds,
+  30 s per token, keyed by its hash; concurrent requests share one lookup;
+  when api-edge cannot answer, a session it confirmed in the last 5 minutes
+  still stands until it expires, and an unconfirmed one fails closed), and finds,
   links (by email) or creates the `users` row by `lumenUserId`. The token stays
   in the HttpOnly cookie: it is never on `req.user`, so the admin's browser
   code never sees it. A request that names another origin gets no user, so
   no other page can write through the API with the cookie, not even a sibling
   Worker on the same workers.dev site, which SameSite does not separate. This
   stands in for Payload's `csrf` allowlist, which applies only to Payload's
-  own cookie and is off with it. `/auth/lumen/session` takes a token only from
+  own cookie and is off with it. Every response also carries
+  `frame-ancestors 'self'` (and `X-Frame-Options: SAMEORIGIN`), so no other
+  page can frame the admin and click through it. `/auth/lumen/session` takes a token only from
   a same-origin form post.
 - **Roles stay Payload's.** A new row has no role: pending, which the admin's
   `unauthorized` view tells them. The first admin needs the owner's setup token

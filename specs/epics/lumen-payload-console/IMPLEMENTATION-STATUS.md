@@ -37,6 +37,17 @@ the code departed from `design.md`.
   for everyone: it queried the UUID `user_id` column with the public `usr_`
   id. It now converts the id first, as every other handler does. The
   baseline's identity-worker has the same bug.
+- **PX2, api-edge rate limits.** The design left api-edge unchanged, but its
+  `auth` family allowed a bearer 10 requests a minute, shared by the CMS's
+  session re-checks and the account pages, which could sign a busy editor
+  out. A bearer reading its own session, profile or security events (or
+  saving its profile) is now the `account` family, 60 a minute; sign-in,
+  OAuth, logout and anonymous calls keep 10. The tight cap never slowed
+  token guessing, since the bucket is keyed on the bearer itself. The CMS
+  also shares one lookup between concurrent requests and keeps a session
+  api-edge confirmed in the last 5 minutes while api-edge cannot answer.
+- **PX2, framing.** Every CMS response carries `frame-ancestors 'self'`;
+  design §6 had not covered framing by a sibling Worker on the same site.
 - **PX2, signed-out redirects.** A custom view's redirect to the sign-in is
   sent inside the streamed page (Next's `NEXT_REDIRECT`), which the browser
   follows; the response itself is `200`, as for Payload's own guarded views.
