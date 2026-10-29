@@ -198,7 +198,7 @@ token the owner chooses. The full steps are in
 
 ```bash
 orun secrets set CMS_SETUP_TOKEN --org <ws> --env stage   # a token of 16+ characters; it prompts
-# merge any change to apps/cms (or re-run its lane) so the deploy pushes it, or:
+# dispatch CI (component cms, environment stage) or merge a change under apps/cms so the next deploy pushes it (a re-run does not deploy), or:
 #   pnpm --filter @saas/cms exec wrangler secret put CMS_SETUP_TOKEN --name lumen-payload-cms-stage
 # then visit https://lumen-payload-cms-stage.<subdomain>.workers.dev/setup?token=<token>
 ```

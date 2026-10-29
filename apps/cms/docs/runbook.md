@@ -59,8 +59,12 @@ opens. Once per environment:
 
 1. Choose a token of at least 16 characters, and keep it to yourself.
 2. Give it to the Worker, either way:
-   - in the workspace's secrets for that environment, as `CMS_SETUP_TOKEN`; the
-     next CMS deploy pushes it; or
+   - in the workspace's secrets as `CMS_SETUP_TOKEN`, for that environment or
+     on the workspace-shared rung (both environments read it). The CMS's next
+     deploy pushes it to the Worker: run the on-demand deploy (Actions → CI →
+     Run workflow, component `cms`, environment `stage` or `prod`), or merge any
+     change under `apps/cms`. Re-running an earlier run does not deploy: the
+     lane's recorded result is reused; or
    - directly: `pnpm exec wrangler secret put CMS_SETUP_TOKEN --name lumen-payload-cms-<env>`
      (it prompts for the value).
 3. Visit `https://lumen-payload-cms-<env>.nexo-7be.workers.dev/setup?token=<token>`.
